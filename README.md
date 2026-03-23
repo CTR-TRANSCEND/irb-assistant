@@ -19,10 +19,25 @@ Upload Documents  -->  Extract & Chunk  -->  LLM Analysis  -->  Review & Edit  -
 4. **Review** each suggestion with side-by-side evidence browsing and deep-linking to source passages
 5. **Export** a completed HRP-503c DOCX with your approved answers filled into the official template
 
-<!-- TODO: Add screenshots when dev server is running
-![Projects Dashboard](503c-assistant/screenshots/projects.png)
-![Review with Evidence](503c-assistant/screenshots/review.png)
--->
+### Login
+
+![Login Page](screenshots/01-login.png)
+
+### Projects Dashboard
+
+![Projects Dashboard](screenshots/02-projects-dashboard.png)
+
+### Project Detail -- Document Upload & AI Analysis
+
+![Project Documents](screenshots/03-project-documents.png)
+
+### Field Review with Evidence
+
+![Field Review](screenshots/04-project-review.png)
+
+### Admin Panel
+
+![Admin Panel](screenshots/05-admin-panel.png)
 
 ## Key Features
 
