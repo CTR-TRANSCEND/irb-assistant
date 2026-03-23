@@ -1,0 +1,5 @@
+# Recommended: run Laravel scheduler every minute.
+* * * * * cd /absolute/path/to/503c-assistant && php artisan schedule:run >> storage/logs/scheduler.log 2>&1
+
+# Alternative (if you do not want to wire scheduler): direct prune job.
+# 15 3 * * * cd /absolute/path/to/503c-assistant && php artisan irb:retention-prune >> storage/logs/retention-prune.log 2>&1

@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] { display: none !important; }
+
+@layer base {
+    body {
+        @apply text-slate-700;
+    }
+}
+
+@layer components {
+    /* Status badges */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+    .badge-green {
+        @apply bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20;
+    }
+    .badge-amber {
+        @apply bg-amber-50 text-amber-700 ring-1 ring-amber-600/20;
+    }
+    .badge-blue {
+        @apply bg-sky-50 text-sky-700 ring-1 ring-sky-600/20;
+    }
+    .badge-red {
+        @apply bg-red-50 text-red-700 ring-1 ring-red-600/20;
+    }
+    .badge-gray {
+        @apply bg-slate-50 text-slate-600 ring-1 ring-slate-500/20;
+    }
+    .badge-indigo {
+        @apply bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20;
+    }
+
+    /* Card component */
+    .card {
+        @apply bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5;
+    }
+    .card-header {
+        @apply px-6 py-4 border-b border-slate-100;
+    }
+    .card-body {
+        @apply px-6 py-5;
+    }
+
+    /* Tabs */
+    .tab-nav {
+        @apply flex gap-1 px-6 border-b border-slate-200;
+    }
+    .tab-link {
+        @apply px-4 py-3 text-sm font-medium rounded-t-lg transition-colors duration-150 border-b-2 -mb-px;
+    }
+    .tab-link-active {
+        @apply border-indigo-500 text-indigo-600 bg-indigo-50/50;
+    }
+    .tab-link-inactive {
+        @apply border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300;
+    }
+
+    /* Stat card */
+    .stat-card {
+        @apply flex flex-col gap-1 p-4 rounded-lg bg-slate-50 ring-1 ring-slate-900/5;
+    }
+    .stat-value {
+        @apply text-2xl font-bold text-slate-900;
+    }
+    .stat-label {
+        @apply text-xs font-medium text-slate-500 uppercase tracking-wider;
+    }
+
+    /* Empty state */
+    .empty-state {
+        @apply py-12 text-center;
+    }
+    .empty-state-icon {
+        @apply mx-auto h-12 w-12 text-slate-300;
+    }
+    .empty-state-title {
+        @apply mt-3 text-sm font-semibold text-slate-900;
+    }
+    .empty-state-text {
+        @apply mt-1 text-sm text-slate-500;
+    }
+
+    /* Alert banners */
+    .alert {
+        @apply rounded-lg p-4 text-sm;
+    }
+    .alert-success {
+        @apply bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600/20;
+    }
+    .alert-warning {
+        @apply bg-amber-50 text-amber-800 ring-1 ring-amber-600/20;
+    }
+    .alert-error {
+        @apply bg-red-50 text-red-800 ring-1 ring-red-600/20;
+    }
+    .alert-info {
+        @apply bg-sky-50 text-sky-800 ring-1 ring-sky-600/20;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+        @apply h-2 w-full rounded-full bg-slate-100 overflow-hidden;
+    }
+    .progress-bar-fill {
+        @apply h-full rounded-full bg-indigo-500 transition-all duration-500 ease-out;
+    }
+}
