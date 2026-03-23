@@ -205,23 +205,14 @@ dist-ssr/
 .netlify/
 .firebase/
 
-# ===========================================
-# IRB-Assist Project Exclusions
-# ===========================================
-# MoAI / Claude Code tooling (entire directories)
+# User Custom Patterns (preserved by moai update)
 .claude/
 .moai/
 .mcp.json
 CLAUDE.md
-
-# Project management docs (kept locally only)
 PROJECT_HANDOFF.md
 PROJECT_LOG.md
 resume_session.txt
-
-# Sensitive research documents
 docs/
-
-# Playwright artifacts inside app
 503c-assistant/.claude/
 503c-assistant/.playwright/
