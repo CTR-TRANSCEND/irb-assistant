@@ -33,5 +33,45 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <!-- Toast notification store -->
+        <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('toast', {
+                items: [],
+                add(message, type = 'success', duration = 4000) {
+                    const id = Date.now();
+                    this.items.push({ id, message, type });
+                    setTimeout(() => this.remove(id), duration);
+                },
+                remove(id) {
+                    this.items = this.items.filter(item => item.id !== id);
+                }
+            });
+        });
+        </script>
+
+        @if(session('status'))
+        <script>
+        document.addEventListener('alpine:initialized', () => Alpine.store('toast').add(@json(session('status')), 'success'));
+        </script>
+        @endif
+
+        <!-- Toast rendering -->
+        <div x-data class="toast-container" aria-live="polite" aria-atomic="true">
+            <template x-for="toast in $store.toast.items" :key="toast.id">
+                <div
+                    class="toast"
+                    :class="'toast-' + toast.type"
+                    x-text="toast.message"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-2"
+                ></div>
+            </template>
+        </div>
     </body>
 </html>

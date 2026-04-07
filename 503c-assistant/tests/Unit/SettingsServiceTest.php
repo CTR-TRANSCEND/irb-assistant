@@ -62,9 +62,7 @@ class SettingsServiceTest extends TestCase
     // bool()
     // -------------------------------------------------------------------------
 
-    /**
-     * @dataProvider truthyStringProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('truthyStringProvider')]
     public function test_bool_returns_true_for_truthy_string_values(string $value): void
     {
         SystemSetting::create(['key' => 'flag', 'value' => $value]);
@@ -87,9 +85,7 @@ class SettingsServiceTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider falsyStringProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('falsyStringProvider')]
     public function test_bool_returns_false_for_falsy_string_values(string $value): void
     {
         SystemSetting::create(['key' => 'flag', 'value' => $value]);

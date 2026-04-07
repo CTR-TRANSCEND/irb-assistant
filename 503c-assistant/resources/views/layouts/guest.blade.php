@@ -21,7 +21,7 @@
                     <x-application-logo class="w-12 h-12" />
                 </a>
                 <h1 class="text-xl font-bold text-slate-900">503c Assistant</h1>
-                <p class="text-sm text-slate-500">IRB Protocol Drafting Tool</p>
+                <p class="text-sm text-slate-600">IRB Protocol Drafting Tool</p>
             </div>
 
             <div class="w-full sm:max-w-md mt-6 px-6 py-6 bg-white shadow-sm ring-1 ring-slate-900/5 overflow-hidden sm:rounded-xl">

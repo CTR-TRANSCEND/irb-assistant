@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\LlmProvider;
@@ -66,16 +68,60 @@ class AdminController extends Controller
                 ->limit(200)
                 ->get();
 
-            $data['analysisUsageByProvider'] = AnalysisRun::query()
-                ->selectRaw('llm_provider_id, COUNT(*) as c')
+            // Per-provider metrics: total, succeeded, failed, avg duration (seconds)
+            $data['providerMetrics'] = AnalysisRun::query()
+                ->selectRaw(
+                    'llm_provider_id,'
+                    . ' COUNT(*) as total,'
+                    . ' SUM(CASE WHEN status = \'succeeded\' THEN 1 ELSE 0 END) as succeeded,'
+                    . ' SUM(CASE WHEN status = \'failed\' THEN 1 ELSE 0 END) as failed,'
+                    . ' AVG(CASE WHEN finished_at IS NOT NULL AND started_at IS NOT NULL'
+                    . '     THEN TIMESTAMPDIFF(SECOND, started_at, finished_at) ELSE NULL END) as avg_duration_s,'
+                    . ' MAX(created_at) as last_used_at'
+                )
                 ->groupBy('llm_provider_id')
-                ->orderByDesc('c')
-                ->pluck('c', 'llm_provider_id');
+                ->orderByDesc('total')
+                ->get()
+                ->keyBy('llm_provider_id');
+
+            // Overall totals
+            $allRuns = $data['analysisRuns'];
+            $data['overallStats'] = [
+                'total'     => $allRuns->count(),
+                'succeeded' => $allRuns->where('status', 'succeeded')->count(),
+                'failed'    => $allRuns->where('status', 'failed')->count(),
+            ];
         }
 
         return view('admin.index', [
             'tab' => $tab,
             ...$data,
+        ]);
+    }
+
+    public function showRun(string $runUuid): View
+    {
+        $run = AnalysisRun::query()
+            ->where('uuid', $runUuid)
+            ->with(['project', 'provider', 'createdBy'])
+            ->firstOrFail();
+
+        // Compute safe metadata only — never expose raw request/response payloads.
+        $durationSeconds = null;
+        if ($run->started_at && $run->finished_at) {
+            $durationSeconds = (int) $run->started_at->diffInSeconds($run->finished_at);
+        }
+
+        // Derive field count from response payload structure without exposing content.
+        $fieldCount = null;
+        if (is_array($run->response_payload)) {
+            $fieldCount = count($run->response_payload);
+        }
+
+        return view('admin.runs.show', [
+            'run'             => $run,
+            'durationSeconds' => $durationSeconds,
+            'fieldCount'      => $fieldCount,
         ]);
     }
 }

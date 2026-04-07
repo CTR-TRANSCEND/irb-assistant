@@ -86,7 +86,7 @@
                 </span>
                 <div>
                     <div class="font-medium text-base text-slate-800">{{ Auth::user()->name }}</div>
-                    <div class="text-sm text-slate-500">{{ Auth::user()->email }}</div>
+                    <div class="text-sm text-slate-600">{{ Auth::user()->email }}</div>
                 </div>
             </div>
 

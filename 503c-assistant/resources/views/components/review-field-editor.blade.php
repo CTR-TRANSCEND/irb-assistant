@@ -7,7 +7,7 @@
     <div class="px-5 py-4 bg-slate-50 border-b border-slate-100">
         <div class="flex items-start justify-between gap-4">
             <div>
-                <p class="text-xs font-medium text-slate-500">{{ $fieldValue['key'] }}</p>
+                <p class="text-xs font-medium text-slate-600">{{ $fieldValue['key'] }}</p>
                 <h3 class="text-lg font-bold text-slate-900 mt-0.5">{{ $fieldValue['label'] }}</h3>
                 <div class="flex items-center gap-3 mt-1">
                     <span @class([
@@ -16,27 +16,33 @@
                         'badge-blue' => $fieldValue['status'] === 'suggested',
                         'badge-amber' => $fieldValue['status'] === 'missing',
                         'badge-indigo' => $fieldValue['status'] === 'edited',
-                    ])>{{ $fieldValue['status'] }}</span>
+                    ]) aria-label="Status: {{ $fieldValue['status'] }}">{{ $fieldValue['status'] }}</span>
                     @if($fieldValue['confidence'] !== null)
-                        <span class="text-xs text-slate-500">confidence: {{ $fieldValue['confidence'] }}</span>
+                        <span class="text-xs text-slate-600">confidence: {{ $fieldValue['confidence'] }}</span>
                     @endif
                 </div>
             </div>
             @if($fieldValue['evidence_count'] > 0)
-                <span class="badge badge-gray">{{ $fieldValue['evidence_count'] }} evidence</span>
+                <span class="badge badge-gray" aria-label="{{ $fieldValue['evidence_count'] }} evidence items">{{ $fieldValue['evidence_count'] }} evidence</span>
             @endif
         </div>
     </div>
 
     <div class="p-5">
-        <label class="text-sm font-medium text-slate-700">Your answer</label>
-        <form class="mt-2" method="POST" action="{{ route('projects.fields.update', ['project' => $project->uuid, 'value' => $fieldValue['id']]) }}">
+        <form method="POST" action="{{ route('projects.fields.update', ['project' => $project->uuid, 'value' => $fieldValue['id']]) }}">
             @csrf
             <input type="hidden" name="tab" value="review" />
-            <textarea name="final_value" class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-400" rows="5">{{ old('final_value', $fieldValue['final_value'] ?? $fieldValue['suggested_value']) }}</textarea>
+            <label for="field-answer-{{ $fieldValue['id'] }}" class="text-sm font-medium text-slate-700">Your answer</label>
+            <textarea
+                id="field-answer-{{ $fieldValue['id'] }}"
+                name="final_value"
+                class="mt-2 w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-400"
+                rows="5"
+                aria-label="Your answer for {{ $fieldValue['label'] }}"
+            >{{ old('final_value', $fieldValue['final_value'] ?? $fieldValue['suggested_value']) }}</textarea>
 
             <div class="mt-3 flex items-center justify-between">
-                <label class="text-sm text-slate-600 flex items-center gap-2 cursor-pointer">
+                <label class="text-sm text-slate-700 flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="confirm" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
                     Mark as confirmed
                 </label>
@@ -46,7 +52,7 @@
 
         @if($fieldValue['show_suggested'])
             <div class="mt-5 border-t border-slate-100 pt-4">
-                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">AI Suggestion</p>
+                <p class="text-xs font-medium text-slate-600 uppercase tracking-wider mb-2">AI Suggestion</p>
                 <div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-4 whitespace-pre-wrap ring-1 ring-slate-900/5">{{ $fieldValue['suggested_value'] }}</div>
             </div>
         @endif

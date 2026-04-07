@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             Hrp503cFieldDefinitionSeeder::class,
+            Hrp503FieldDefinitionSeeder::class,
             TemplateSeeder::class,
         ]);
     }

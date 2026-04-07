@@ -37,7 +37,7 @@ test('login and save storageState', async ({ page }) => {
   await page.getByRole('button', { name: /log in/i }).click();
 
   await expect(page).toHaveURL(/\/projects/);
-  await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Projects', exact: true }).first()).toBeVisible();
 
   fs.mkdirSync(path.dirname(storageStatePath), { recursive: true });
   await page.context().storageState({ path: storageStatePath });

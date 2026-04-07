@@ -28,7 +28,7 @@
         @apply bg-red-50 text-red-700 ring-1 ring-red-600/20;
     }
     .badge-gray {
-        @apply bg-slate-50 text-slate-600 ring-1 ring-slate-500/20;
+        @apply bg-slate-50 text-slate-700 ring-1 ring-slate-500/20;
     }
     .badge-indigo {
         @apply bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20;
@@ -56,7 +56,7 @@
         @apply border-indigo-500 text-indigo-600 bg-indigo-50/50;
     }
     .tab-link-inactive {
-        @apply border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300;
+        @apply border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300;
     }
 
     /* Stat card */
@@ -67,7 +67,7 @@
         @apply text-2xl font-bold text-slate-900;
     }
     .stat-label {
-        @apply text-xs font-medium text-slate-500 uppercase tracking-wider;
+        @apply text-xs font-medium text-slate-600 uppercase tracking-wider;
     }
 
     /* Empty state */
@@ -75,13 +75,13 @@
         @apply py-12 text-center;
     }
     .empty-state-icon {
-        @apply mx-auto h-12 w-12 text-slate-300;
+        @apply mx-auto h-12 w-12 text-slate-400;
     }
     .empty-state-title {
         @apply mt-3 text-sm font-semibold text-slate-900;
     }
     .empty-state-text {
-        @apply mt-1 text-sm text-slate-500;
+        @apply mt-1 text-sm text-slate-600;
     }
 
     /* Alert banners */
@@ -107,5 +107,74 @@
     }
     .progress-bar-fill {
         @apply h-full rounded-full bg-indigo-500 transition-all duration-500 ease-out;
+    }
+
+    /* Toast notifications */
+    .toast-container {
+        @apply fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none;
+    }
+    .toast {
+        @apply pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg ring-1 text-sm font-medium max-w-sm;
+    }
+    .toast-success {
+        @apply bg-emerald-50 text-emerald-800 ring-emerald-600/20;
+    }
+    .toast-error {
+        @apply bg-red-50 text-red-800 ring-red-600/20;
+    }
+    .toast-warning {
+        @apply bg-amber-50 text-amber-800 ring-amber-600/20;
+    }
+    .toast-info {
+        @apply bg-sky-50 text-sky-800 ring-sky-600/20;
+    }
+
+    /* Spinner */
+    .spinner {
+        @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+    }
+    .spinner-sm {
+        @apply w-3 h-3;
+    }
+    .spinner-lg {
+        @apply w-6 h-6;
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+        @apply bg-slate-200 rounded animate-pulse;
+    }
+    .skeleton-text {
+        @apply h-4 bg-slate-200 rounded animate-pulse;
+    }
+    .skeleton-title {
+        @apply h-6 bg-slate-200 rounded animate-pulse;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+        @apply flex items-center gap-1.5 text-sm;
+    }
+    .breadcrumb-item {
+        @apply text-slate-600 hover:text-slate-900 transition-colors;
+    }
+    .breadcrumb-item-current {
+        @apply text-slate-900 font-medium;
+    }
+    .breadcrumb-separator {
+        @apply text-slate-400 text-xs select-none;
+    }
+
+    /* Button group */
+    .btn-group {
+        @apply inline-flex rounded-lg overflow-hidden ring-1 ring-slate-300;
+    }
+    .btn-group > * {
+        @apply rounded-none ring-0 border-r border-slate-300 last:border-r-0;
+    }
+
+    /* Form help text */
+    .form-help {
+        @apply mt-1.5 text-xs text-slate-600;
     }
 }

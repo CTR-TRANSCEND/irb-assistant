@@ -19,7 +19,6 @@
 /playwright-report
 /test-results
 /.playwright
-/screenshots
 /tests/screenshots
 /storage/*.key
 /storage/pail

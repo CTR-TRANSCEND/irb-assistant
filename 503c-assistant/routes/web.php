@@ -33,9 +33,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project:uuid}/analyze', [ProjectAnalysisController::class, 'store'])->name('projects.analyze');
     Route::post('/projects/{project:uuid}/fields/{value}', [ProjectFieldController::class, 'update'])->name('projects.fields.update');
     Route::post('/projects/{project:uuid}/export', [ExportController::class, 'store'])->name('projects.exports.store');
-    Route::get('/exports/{export:uuid}', [ExportController::class, 'download'])->name('exports.download');
+    Route::get('/exports/{export:uuid}', [ExportController::class, 'download'])->middleware('throttle:10,1')->name('exports.download');
 
     Route::get('/admin', [AdminController::class, 'index'])->middleware('admin')->name('admin.index');
+    Route::get('/admin/runs/{runUuid}', [AdminController::class, 'showRun'])->middleware('admin')->name('admin.runs.show');
     Route::post('/admin/providers', [AdminProviderController::class, 'store'])->middleware('admin')->name('admin.providers.store');
     Route::post('/admin/providers/{provider}/test', [AdminProviderController::class, 'test'])->middleware('admin')->name('admin.providers.test');
     Route::post('/admin/settings', [AdminSettingController::class, 'store'])->middleware('admin')->name('admin.settings.store');

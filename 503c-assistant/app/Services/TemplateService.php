@@ -272,9 +272,28 @@ class TemplateService
 
     public function applyBundledMappingPack(TemplateVersion $templateVersion): int
     {
-        $pack = $this->loadBundledMappingPack();
+        $path = $this->resolveBundledMappingPackPath($templateVersion);
+        $pack = $this->loadBundledMappingPack($path);
 
         return $this->applyMappingPack($templateVersion, $pack);
+    }
+
+    /**
+     * Resolve the bundled mapping-pack file path for the given template version.
+     *
+     * The HRP-503 Protocol/Application template uses a dedicated pack. All
+     * other templates (including HRP-503c) fall back to the HRP-503c pack.
+     */
+    private function resolveBundledMappingPackPath(TemplateVersion $templateVersion): string
+    {
+        // SHA-256 of docs/HRP-503-TEMPLATE-PROTOCOL.docx at time of authoring.
+        $hrp503Sha256 = '1c26f1893830efeb99fba14ca0e1cf5606d785017a36e689c1042c16bfe2ea8d';
+
+        if (hash_equals($hrp503Sha256, strtolower((string) $templateVersion->sha256))) {
+            return base_path('resources/mapping-packs/hrp503-default.php');
+        }
+
+        return base_path('resources/mapping-packs/hrp503c-default.php');
     }
 
     public function loadBundledMappingPack(?string $path = null): array
@@ -446,7 +465,7 @@ class TemplateService
         $guessedLabel = $entry['guessed_label'] ?? null;
         if (is_string($guessedLabel) && $guessedLabel !== '') {
             $current = $this->guessLabel($control->context_before, $control->context_after, (int) $control->control_index);
-            if (! hash_equals(strtoupper($guessedLabel), strtoupper($current))) {
+            if (strtoupper($guessedLabel) !== strtoupper($current)) {
                 return false;
             }
         }
