@@ -72,7 +72,7 @@
                                             <td class="px-4 py-3 font-medium text-slate-900">{{ $u->email }}</td>
                                             <td class="px-4 py-3 text-slate-700">{{ $u->name }}</td>
                                             <td class="px-4 py-3">
-                                                <select name="role" form="{{ $formId }}" class="rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                                <select name="role" form="{{ $formId }}" class="rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
                                                     <option value="user" @selected($u->role === 'user')>User</option>
                                                     <option value="admin" @selected($u->role === 'admin')>Admin</option>
                                                 </select>
@@ -81,13 +81,13 @@
                                                 <input type="hidden" name="is_active" value="0" form="{{ $formId }}" />
                                                 <label class="relative inline-flex items-center cursor-pointer" aria-label="Active status for {{ $u->name }}">
                                                     <input type="checkbox" name="is_active" value="1" form="{{ $formId }}" @checked($u->is_active) class="sr-only peer" aria-label="User active: {{ $u->name }}" />
-                                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600" aria-hidden="true"></div>
+                                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600" aria-hidden="true"></div>
                                                 </label>
                                             </td>
                                             <td class="px-4 py-3 text-slate-600 text-xs">{{ $u->last_login_at?->diffForHumans() ?? 'Never' }}</td>
                                             <td class="px-4 py-3 text-right">
                                                 <form id="{{ $formId }}" method="POST" action="{{ route('admin.users.update', ['user' => $u->id]) }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+                                                    @csrf
                                                 </form>
                                                 <button type="submit" form="{{ $formId }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Update</button>
                                             </td>
@@ -162,48 +162,58 @@
                                         <h4 class="text-sm font-semibold text-slate-900">Add / Update Provider</h4>
                                         <p class="text-xs text-slate-600 mt-0.5">OpenAI-compatible, Ollama, LM Studio, or GLM 4.7</p>
                                     </div>
-                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.providers.store') }}">
+                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.providers.store') }}" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
                                         <div>
                                             <x-input-label for="name" value="Name" />
-                                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="My Provider" required />
+                                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="My Provider" :value="old('name')" required />
+                                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="provider_type" value="Type" />
-                                            <select id="provider_type" name="provider_type" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="openai">OpenAI</option>
-                                                <option value="openai_compat">OpenAI Compatible</option>
-                                                <option value="ollama">Ollama</option>
-                                                <option value="lmstudio">LM Studio</option>
-                                                <option value="glm47">GLM 4.7</option>
+                                            <select id="provider_type" name="provider_type" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
+                                                <option value="openai" @selected(old('provider_type') === 'openai')>OpenAI</option>
+                                                <option value="openai_compat" @selected(old('provider_type') === 'openai_compat')>OpenAI Compatible</option>
+                                                <option value="ollama" @selected(old('provider_type') === 'ollama')>Ollama</option>
+                                                <option value="lmstudio" @selected(old('provider_type') === 'lmstudio')>LM Studio</option>
+                                                <option value="glm47" @selected(old('provider_type') === 'glm47')>GLM 4.7</option>
                                             </select>
+                                            <x-input-error :messages="$errors->get('provider_type')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="base_url" value="Base URL" />
-                                            <x-text-input id="base_url" name="base_url" type="text" class="mt-1 block w-full" placeholder="https://api.openai.com/v1" />
+                                            <x-text-input id="base_url" name="base_url" type="text" class="mt-1 block w-full" placeholder="https://api.openai.com/v1" :value="old('base_url')" />
+                                            <x-input-error :messages="$errors->get('base_url')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="model" value="Model" />
-                                            <x-text-input id="model" name="model" type="text" class="mt-1 block w-full" placeholder="gpt-4.1-mini" />
+                                            <x-text-input id="model" name="model" type="text" class="mt-1 block w-full" placeholder="gpt-4.1-mini" :value="old('model')" />
+                                            <x-input-error :messages="$errors->get('model')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="api_key" value="API Key" />
                                             <x-text-input id="api_key" name="api_key" type="password" class="mt-1 block w-full" />
+                                            <x-input-error :messages="$errors->get('api_key')" class="mt-2" />
                                         </div>
                                         <div>
                                             <x-input-label for="request_params_json" value="Request Params (JSON)" />
-                                            <textarea id="request_params_json" name="request_params_json" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-400" rows="3" placeholder='{"temperature": 0.2}'></textarea>
+                                            <textarea id="request_params_json" name="request_params_json" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 placeholder:text-slate-400" rows="3" placeholder='{"temperature": 0.2}'>{{ old('request_params_json') }}</textarea>
                                             <x-input-error :messages="$errors->get('request_params_json')" class="mt-2" />
                                         </div>
                                         <div class="flex flex-wrap gap-4 text-sm">
                                             <input type="hidden" name="is_enabled" value="0" />
                                             <input type="hidden" name="is_default" value="0" />
                                             <input type="hidden" name="is_external" value="0" />
-                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_enabled" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" /> Enabled</label>
-                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_default" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" /> Default</label>
-                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_external" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" /> External</label>
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_enabled" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> Enabled</label>
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_default" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> Default</label>
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_external" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> External</label>
                                         </div>
-                                        <x-primary-button class="w-full justify-center">Save Provider</x-primary-button>
+                                        <x-primary-button class="w-full justify-center" :disabled="false" x-bind:disabled="loading">
+                                            <span x-show="!loading">Save Provider</span>
+                                            <span x-show="loading" class="inline-flex items-center">
+                                                <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                            </span>
+                                        </x-primary-button>
                                     </form>
                                 </div>
                             </div>
@@ -259,7 +269,7 @@
                                         <h4 class="text-sm font-semibold text-slate-900">Upload Template</h4>
                                         <p class="text-xs text-slate-600 mt-0.5">Upload an HRP-503c .docx for content control scanning.</p>
                                     </div>
-                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.templates.store') }}" enctype="multipart/form-data">
+                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.templates.store') }}" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
                                         <div>
                                             <x-input-label for="name" value="Template name" />
@@ -270,7 +280,12 @@
                                             <input id="template" type="file" name="template" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required />
                                             <x-input-error :messages="$errors->get('template')" class="mt-2" />
                                         </div>
-                                        <x-primary-button class="w-full justify-center">Upload</x-primary-button>
+                                        <x-primary-button class="w-full justify-center" x-bind:disabled="loading">
+                                            <span x-show="!loading">Upload</span>
+                                            <span x-show="loading" class="inline-flex items-center">
+                                                <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Uploading...
+                                            </span>
+                                        </x-primary-button>
                                     </form>
                                 </div>
                             </div>
@@ -290,12 +305,12 @@
                         <h3 class="text-base font-semibold text-slate-900">System Settings</h3>
                         <p class="text-sm text-slate-600 mt-1">Instance-wide configuration for all users.</p>
 
-                        <form class="mt-6 space-y-6" method="POST" action="{{ route('admin.settings.store') }}">
+                        <form class="mt-6 space-y-6" method="POST" action="{{ route('admin.settings.store') }}" x-data="{ loading: false }" @submit="loading = true">
                             @csrf
 
                             <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
                                 <div class="flex items-start gap-3">
-                                    <input id="allow_external_llm" type="checkbox" name="allow_external_llm" value="1" class="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" @checked($s['allow_external_llm']) />
+                                    <input id="allow_external_llm" type="checkbox" name="allow_external_llm" value="1" class="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-brand-500" @checked($s['allow_external_llm']) />
                                     <div>
                                         <label for="allow_external_llm" class="text-sm font-medium text-slate-900 cursor-pointer">Allow external LLM providers</label>
                                         <p class="text-sm text-slate-600 mt-0.5">When enabled, providers marked as "external" can receive document text for analysis.</p>
@@ -322,7 +337,7 @@
                                 </div>
                                 <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
                                     <x-input-label for="logging_level" value="Logging level" />
-                                    <select id="logging_level" name="logging_level" class="mt-2 block w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                    <select id="logging_level" name="logging_level" class="mt-2 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
                                         @foreach(['debug','info','notice','warning','error','critical','alert','emergency'] as $lvl)
                                             <option value="{{ $lvl }}" @selected($s['logging_level'] === $lvl)>{{ ucfirst($lvl) }}</option>
                                         @endforeach
@@ -331,9 +346,14 @@
                                 </div>
                             </div>
 
-                            <x-primary-button>
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                Save Settings
+                            <x-primary-button x-bind:disabled="loading">
+                                <span x-show="!loading" class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Save Settings
+                                </span>
+                                <span x-show="loading" class="inline-flex items-center">
+                                    <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                </span>
                             </x-primary-button>
                         </form>
 

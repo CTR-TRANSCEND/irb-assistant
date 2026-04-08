@@ -105,11 +105,11 @@
                                     </h3>
                                     <p class="text-sm text-slate-600 mt-1">Auto-fill fields with evidence from your documents.</p>
 
-                                    <form class="mt-3" method="POST" action="{{ route('projects.provider.update', ['project' => $project->uuid]) }}">
+                                    <form class="mt-3" method="POST" action="{{ route('projects.provider.update', ['project' => $project->uuid]) }}" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
                                         <input type="hidden" name="tab" value="documents" />
                                         <x-input-label value="LLM Provider" />
-                                        <select name="llm_provider_id" class="mt-1 w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <select name="llm_provider_id" class="mt-1 w-full rounded-lg border-slate-300 text-sm focus:border-brand-500 focus:ring-brand-500">
                                             <option value="">System default</option>
                                             @foreach(($providerOptions ?? collect()) as $p)
                                                 <option value="{{ $p->id }}" @selected((int) ($project->llm_provider_id ?? 0) === (int) $p->id)>
@@ -119,7 +119,12 @@
                                         </select>
                                         <x-input-error :messages="$errors->get('llm_provider_id')" class="mt-2" />
                                         <div class="mt-2">
-                                            <x-secondary-button type="submit" class="text-xs">Save preference</x-secondary-button>
+                                            <x-secondary-button type="submit" class="text-xs" x-bind:disabled="loading">
+                                                <span x-show="!loading">Save preference</span>
+                                                <span x-show="loading" class="inline-flex items-center">
+                                                    <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                                </span>
+                                            </x-secondary-button>
                                         </div>
                                     </form>
 
@@ -305,15 +310,20 @@
                                             <span class="badge badge-amber">Missing</span>
                                         </div>
 
-                                        <form class="mt-4" method="POST" action="{{ route('projects.fields.update', ['project' => $project->uuid, 'value' => $fv->id]) }}">
+                                        <form class="mt-4" method="POST" action="{{ route('projects.fields.update', ['project' => $project->uuid, 'value' => $fv->id]) }}" x-data="{ loading: false }" @submit="loading = true">
                                             @csrf
                                             <input type="hidden" name="tab" value="questions" />
-                                            <textarea name="final_value" class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-400" rows="3" placeholder="Enter your response..."></textarea>
+                                            <textarea name="final_value" class="w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 placeholder:text-slate-400" rows="3" placeholder="Enter your response..."></textarea>
                                             <div class="flex justify-end mt-3">
                                                 <input type="hidden" name="confirm" value="1" />
-                                                <x-primary-button>
-                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    Save & Confirm
+                                                <x-primary-button x-bind:disabled="loading">
+                                                    <span x-show="!loading" class="inline-flex items-center">
+                                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        Save & Confirm
+                                                    </span>
+                                                    <span x-show="loading" class="inline-flex items-center">
+                                                        <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                                    </span>
                                                 </x-primary-button>
                                             </div>
                                         </form>
