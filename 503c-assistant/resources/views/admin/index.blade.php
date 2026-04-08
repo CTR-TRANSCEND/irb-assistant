@@ -3,8 +3,8 @@
         <div class="flex items-center gap-3">
             <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <div>
-                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Admin</p>
-                <h2 class="text-xl font-bold text-slate-900">System Management</h2>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Admin</p>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">System Management</h2>
             </div>
         </div>
     </x-slot>
@@ -49,30 +49,30 @@
                     {{-- ============ USERS TAB ============ --}}
                     @if($tab === 'users')
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-base font-semibold text-slate-900">User Management</h3>
+                            <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">User Management</h3>
                             <span class="badge badge-gray">{{ ($users ?? collect())->count() }} users</span>
                         </div>
-                        <div class="overflow-x-auto rounded-xl ring-1 ring-slate-900/5">
+                        <div class="overflow-x-auto rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10">
                             <table class="min-w-full text-sm" aria-label="User management table">
                                 <caption class="sr-only">List of registered users with role and active status controls</caption>
-                                <thead class="bg-slate-50">
+                                <thead class="bg-slate-50 dark:bg-slate-700">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Email</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Name</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Role</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Active</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Last Login</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Email</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Name</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Role</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Active</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Last Login</th>
                                         <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100">
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                                     @foreach(($users ?? collect()) as $u)
                                         @php $formId = 'user-update-'.$u->id; @endphp
-                                        <tr class="hover:bg-slate-50/50">
-                                            <td class="px-4 py-3 font-medium text-slate-900">{{ $u->email }}</td>
-                                            <td class="px-4 py-3 text-slate-700">{{ $u->name }}</td>
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/50">
+                                            <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ $u->email }}</td>
+                                            <td class="px-4 py-3 text-slate-700 dark:text-slate-300">{{ $u->name }}</td>
                                             <td class="px-4 py-3">
-                                                <select name="role" form="{{ $formId }}" class="rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
+                                                <select name="role" form="{{ $formId }}" aria-label="Role for {{ $u->name }}" class="rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
                                                     <option value="user" @selected($u->role === 'user')>User</option>
                                                     <option value="admin" @selected($u->role === 'admin')>Admin</option>
                                                 </select>
@@ -84,7 +84,7 @@
                                                     <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600" aria-hidden="true"></div>
                                                 </label>
                                             </td>
-                                            <td class="px-4 py-3 text-slate-600 text-xs">{{ $u->last_login_at?->diffForHumans() ?? 'Never' }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs dark:text-slate-400">{{ $u->last_login_at?->diffForHumans() ?? 'Never' }}</td>
                                             <td class="px-4 py-3 text-right">
                                                 <form id="{{ $formId }}" method="POST" action="{{ route('admin.users.update', ['user' => $u->id]) }}">
                                                     @csrf
@@ -101,14 +101,14 @@
                     @elseif($tab === 'providers')
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div class="lg:col-span-2">
-                                <h3 class="text-base font-semibold text-slate-900 mb-4">Configured Providers</h3>
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Configured Providers</h3>
                                 <div class="space-y-3">
                                     @forelse(($providers ?? collect()) as $p)
-                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4">
+                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4 dark:bg-slate-700 dark:ring-white/10">
                                             <div class="flex items-start justify-between gap-4">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2">
-                                                        <span class="font-semibold text-slate-900">{{ $p->name }}</span>
+                                                        <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $p->name }}</span>
                                                         @if($p->is_default) <span class="badge badge-indigo">default</span> @endif
                                                         @if($p->is_enabled)
                                                             <span class="badge badge-green">enabled</span>
@@ -117,12 +117,12 @@
                                                         @endif
                                                         @if($p->is_external) <span class="badge badge-amber">external</span> @endif
                                                     </div>
-                                                    <div class="flex items-center gap-2 mt-1 text-xs text-slate-600">
+                                                    <div class="flex items-center gap-2 mt-1 text-xs text-slate-600 dark:text-slate-400">
                                                         <span class="badge badge-gray">{{ $p->provider_type }}</span>
                                                         @if($p->model) <span>{{ $p->model }}</span> @endif
                                                     </div>
                                                     @if($p->base_url)
-                                                        <div class="text-xs text-slate-500 mt-1 truncate">{{ $p->base_url }}</div>
+                                                        <div class="text-xs text-slate-500 mt-1 truncate dark:text-slate-400">{{ $p->base_url }}</div>
                                                     @endif
                                                 </div>
                                                 <div class="flex items-center gap-3">
@@ -133,7 +133,7 @@
                                                             @elseif($p->last_test_ok === false)
                                                                 <span class="badge badge-red">Failed</span>
                                                             @endif
-                                                            <div class="text-xs text-slate-400 mt-0.5">{{ $p->last_tested_at->diffForHumans() }}</div>
+                                                            <div class="text-xs text-slate-400 mt-0.5 dark:text-slate-500">{{ $p->last_tested_at->diffForHumans() }}</div>
                                                         </div>
                                                     @endif
                                                     <form method="POST" action="{{ route('admin.providers.test', ['provider' => $p->id]) }}">
@@ -157,10 +157,10 @@
                             </div>
 
                             <div>
-                                <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden">
-                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100">
-                                        <h4 class="text-sm font-semibold text-slate-900">Add / Update Provider</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">OpenAI-compatible, Ollama, LM Studio, or GLM 4.7</p>
+                                <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10">
+                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 dark:bg-slate-700 dark:border-slate-600">
+                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Add / Update Provider</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5 dark:text-slate-400">OpenAI-compatible, Ollama, LM Studio, or GLM 4.7</p>
                                     </div>
                                     <form class="p-5 space-y-4" method="POST" action="{{ route('admin.providers.store') }}" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
@@ -171,7 +171,7 @@
                                         </div>
                                         <div>
                                             <x-input-label for="provider_type" value="Type" />
-                                            <select id="provider_type" name="provider_type" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
+                                            <select id="provider_type" name="provider_type" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
                                                 <option value="openai" @selected(old('provider_type') === 'openai')>OpenAI</option>
                                                 <option value="openai_compat" @selected(old('provider_type') === 'openai_compat')>OpenAI Compatible</option>
                                                 <option value="ollama" @selected(old('provider_type') === 'ollama')>Ollama</option>
@@ -197,7 +197,7 @@
                                         </div>
                                         <div>
                                             <x-input-label for="request_params_json" value="Request Params (JSON)" />
-                                            <textarea id="request_params_json" name="request_params_json" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 placeholder:text-slate-400" rows="3" placeholder='{"temperature": 0.2}'>{{ old('request_params_json') }}</textarea>
+                                            <textarea id="request_params_json" name="request_params_json" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400" rows="3" placeholder='{"temperature": 0.2}'>{{ old('request_params_json') }}</textarea>
                                             <x-input-error :messages="$errors->get('request_params_json')" class="mt-2" />
                                         </div>
                                         <div class="flex flex-wrap gap-4 text-sm">
@@ -223,7 +223,7 @@
                     @elseif($tab === 'templates')
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div class="lg:col-span-2">
-                                <h3 class="text-base font-semibold text-slate-900 mb-4">Template Versions</h3>
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Template Versions</h3>
                                 <div class="space-y-3">
                                     @forelse(($templates ?? collect()) as $t)
                                         @php
@@ -235,10 +235,10 @@
                                             <div class="flex items-start justify-between gap-4">
                                                 <div class="flex-1">
                                                     <div class="flex items-center gap-2">
-                                                        <span class="font-semibold text-slate-900">{{ $t->name }}</span>
+                                                        <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $t->name }}</span>
                                                         @if($t->is_active) <span class="badge badge-green">active</span> @endif
                                                     </div>
-                                                    <div class="flex items-center gap-3 mt-2 text-xs text-slate-600">
+                                                    <div class="flex items-center gap-3 mt-2 text-xs text-slate-600 dark:text-slate-400">
                                                         <span>{{ $controls }} controls</span>
                                                         <span>{{ $mapped }} mapped ({{ $mapPct }}%)</span>
                                                         <span>{{ $t->created_at->diffForHumans() }}</span>
@@ -246,7 +246,7 @@
                                                     <div class="mt-2 progress-bar">
                                                         <div class="progress-bar-fill" style="width: {{ $mapPct }}%"></div>
                                                     </div>
-                                                    <div class="text-xs text-slate-400 mt-2 font-mono">{{ \Illuminate\Support\Str::limit($t->sha256, 20, '...') }}</div>
+                                                    <div class="text-xs text-slate-400 mt-2 font-mono dark:text-slate-500">{{ \Illuminate\Support\Str::limit($t->sha256, 20, '...') }}</div>
                                                 </div>
                                                 <a class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors" href="{{ route('admin.templates.show', ['template' => $t->uuid]) }}">
                                                     Manage &rarr;
@@ -264,10 +264,10 @@
                             </div>
 
                             <div>
-                                <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden">
-                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100">
-                                        <h4 class="text-sm font-semibold text-slate-900">Upload Template</h4>
-                                        <p class="text-xs text-slate-600 mt-0.5">Upload an HRP-503c .docx for content control scanning.</p>
+                                <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10">
+                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 dark:bg-slate-700 dark:border-slate-600">
+                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Upload Template</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5 dark:text-slate-400">Upload an HRP-503c .docx for content control scanning.</p>
                                     </div>
                                     <form class="p-5 space-y-4" method="POST" action="{{ route('admin.templates.store') }}" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
@@ -302,18 +302,18 @@
                             ];
                         @endphp
 
-                        <h3 class="text-base font-semibold text-slate-900">System Settings</h3>
-                        <p class="text-sm text-slate-600 mt-1">Instance-wide configuration for all users.</p>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">System Settings</h3>
+                        <p class="text-sm text-slate-600 mt-1 dark:text-slate-400">Instance-wide configuration for all users.</p>
 
                         <form class="mt-6 space-y-6" method="POST" action="{{ route('admin.settings.store') }}" x-data="{ loading: false }" @submit="loading = true">
                             @csrf
 
-                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
                                 <div class="flex items-start gap-3">
-                                    <input id="allow_external_llm" type="checkbox" name="allow_external_llm" value="1" class="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-brand-500" @checked($s['allow_external_llm']) />
+                                    <input id="allow_external_llm" type="checkbox" name="allow_external_llm" value="1" class="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700" @checked($s['allow_external_llm']) />
                                     <div>
-                                        <label for="allow_external_llm" class="text-sm font-medium text-slate-900 cursor-pointer">Allow external LLM providers</label>
-                                        <p class="text-sm text-slate-600 mt-0.5">When enabled, providers marked as "external" can receive document text for analysis.</p>
+                                        <label for="allow_external_llm" class="text-sm font-medium text-slate-900 cursor-pointer dark:text-slate-100">Allow external LLM providers</label>
+                                        <p class="text-sm text-slate-600 mt-0.5 dark:text-slate-400">When enabled, providers marked as "external" can receive document text for analysis.</p>
                                     </div>
                                 </div>
                                 <div class="alert alert-warning mt-3 text-xs">
@@ -325,24 +325,24 @@
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
                                     <x-input-label for="retention_days" value="Retention (days)" />
                                     <x-text-input id="retention_days" name="retention_days" type="number" min="1" max="3650" class="mt-2 block w-full" :value="$s['retention_days']" required />
-                                    <p class="text-xs text-slate-600 mt-2">Auto-delete uploads and exports after this many days.</p>
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Auto-delete uploads and exports after this many days.</p>
                                 </div>
-                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
                                     <x-input-label for="max_upload_bytes" value="Max upload size (bytes)" />
                                     <x-text-input id="max_upload_bytes" name="max_upload_bytes" type="number" min="1048576" max="1073741824" class="mt-2 block w-full" :value="$s['max_upload_bytes']" required />
-                                    <p class="text-xs text-slate-600 mt-2">Default: 104,857,600 (100 MB)</p>
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Default: 104,857,600 (100 MB)</p>
                                 </div>
-                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5">
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
                                     <x-input-label for="logging_level" value="Logging level" />
-                                    <select id="logging_level" name="logging_level" class="mt-2 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500">
+                                    <select id="logging_level" name="logging_level" class="mt-2 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
                                         @foreach(['debug','info','notice','warning','error','critical','alert','emergency'] as $lvl)
                                             <option value="{{ $lvl }}" @selected($s['logging_level'] === $lvl)>{{ ucfirst($lvl) }}</option>
                                         @endforeach
                                     </select>
-                                    <p class="text-xs text-slate-600 mt-2">Controls verbosity of application logs.</p>
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Controls verbosity of application logs.</p>
                                 </div>
                             </div>
 
@@ -364,25 +364,25 @@
                             <span class="badge badge-gray">{{ method_exists($auditEvents ?? collect(), 'total') ? $auditEvents->total() : ($auditEvents ?? collect())->count() }} events</span>
                         </div>
 
-                        <div class="overflow-x-auto rounded-xl ring-1 ring-slate-900/5">
+                        <div class="overflow-x-auto rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10">
                             <table class="min-w-full text-sm" aria-label="System audit log">
                                 <caption class="sr-only">System audit log showing event type, time, actor, entity, and details</caption>
-                                <thead class="bg-slate-50">
+                                <thead class="bg-slate-50 dark:bg-slate-700">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Event</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">When</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Actor</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Entity</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Details</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Event</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">When</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Actor</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Entity</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Details</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100">
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                                     @forelse(($auditEvents ?? collect()) as $ev)
-                                        <tr class="hover:bg-slate-50/50">
-                                            <td class="px-4 py-3 font-medium text-slate-900">{{ $ev->event_type }}</td>
-                                            <td class="px-4 py-3 text-slate-600 text-xs whitespace-nowrap">{{ $ev->occurred_at?->diffForHumans() ?? $ev->created_at->diffForHumans() }}</td>
-                                            <td class="px-4 py-3 text-slate-600 text-xs">{{ $ev->actor_user_id ? '#'.$ev->actor_user_id : '-' }}</td>
-                                            <td class="px-4 py-3 text-slate-600 text-xs">
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/50">
+                                            <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ $ev->event_type }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs whitespace-nowrap dark:text-slate-400">{{ $ev->occurred_at?->diffForHumans() ?? $ev->created_at->diffForHumans() }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs dark:text-slate-400">{{ $ev->actor_user_id ? '#'.$ev->actor_user_id : '-' }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs dark:text-slate-400">
                                                 @if($ev->entity_type)
                                                     {{ $ev->entity_type }}@if($ev->entity_id) #{{ $ev->entity_id }}@endif
                                                 @else
@@ -431,31 +431,31 @@
 
                         {{-- Overall summary stat cards --}}
                         <div class="grid grid-cols-3 gap-4 mb-8" role="region" aria-label="Overall run statistics">
-                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center">
-                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Runs</p>
-                                <p class="mt-2 text-3xl font-bold text-slate-900">{{ $overall['total'] }}</p>
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Total Runs</p>
+                                <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{{ $overall['total'] }}</p>
                             </div>
-                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center">
-                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Succeeded</p>
-                                <p class="mt-2 text-3xl font-bold text-green-600">{{ $overall['succeeded'] }}</p>
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Succeeded</p>
+                                <p class="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{{ $overall['succeeded'] }}</p>
                             </div>
-                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center">
-                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Failed</p>
-                                <p class="mt-2 text-3xl font-bold text-red-600">{{ $overall['failed'] }}</p>
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Failed</p>
+                                <p class="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">{{ $overall['failed'] }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {{-- Analysis Runs list --}}
                             <div class="lg:col-span-2">
-                                <h3 class="text-base font-semibold text-slate-900 mb-4">Recent Analysis Runs</h3>
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Recent Analysis Runs</h3>
                                 <div class="space-y-3" role="list" aria-label="Recent analysis runs">
                                     @forelse(($analysisRuns ?? collect()) as $run)
-                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4" role="listitem">
+                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4 dark:bg-slate-700 dark:ring-white/10" role="listitem">
                                             <div class="flex items-start justify-between gap-4">
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2 flex-wrap">
-                                                        <span class="font-medium text-slate-900 text-sm font-mono">{{ substr($run->uuid, 0, 8) }}</span>
+                                                        <span class="font-medium text-slate-900 text-sm font-mono dark:text-slate-100">{{ substr($run->uuid, 0, 8) }}</span>
                                                         <span @class([
                                                             'badge text-xs',
                                                             'badge-green'  => $run->status === 'succeeded',
@@ -465,7 +465,7 @@
                                                             'badge-gray'   => !in_array($run->status, ['succeeded', 'failed', 'running', 'queued']),
                                                         ]) aria-label="Status: {{ $run->status }}">{{ $run->status }}</span>
                                                     </div>
-                                                    <div class="mt-1 text-xs text-slate-600 truncate">
+                                                    <div class="mt-1 text-xs text-slate-600 truncate dark:text-slate-400">
                                                         @if($run->project?->name)
                                                             <span class="font-medium">{{ $run->project->name }}</span> &middot;
                                                         @endif
@@ -499,7 +499,7 @@
 
                             {{-- Provider Usage Metrics --}}
                             <div>
-                                <h3 class="text-base font-semibold text-slate-900 mb-4">Provider Usage</h3>
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Provider Usage</h3>
                                 @php
                                     $providersById   = ($providers ?? collect())->keyBy('id');
                                     $provMetrics     = $providerMetrics ?? collect();
@@ -507,8 +507,8 @@
                                 @if($provMetrics->isEmpty())
                                     <div class="rounded-xl ring-1 ring-slate-900/5 p-8 text-center text-sm text-slate-600">No usage data yet.</div>
                                 @else
-                                    <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden" role="table" aria-label="Provider usage metrics">
-                                        <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 grid grid-cols-5 gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider" role="row">
+                                    <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10" role="table" aria-label="Provider usage metrics">
+                                        <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 grid grid-cols-5 gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300" role="row">
                                             <div class="col-span-2" role="columnheader">Provider</div>
                                             <div class="text-right" role="columnheader">Runs</div>
                                             <div class="text-right" role="columnheader">Success</div>
@@ -524,17 +524,17 @@
                                                     ? round((float) $metric->avg_duration_s)
                                                     : null;
                                             @endphp
-                                            <div class="px-4 py-3 border-b border-slate-100 last:border-b-0 grid grid-cols-5 gap-2 items-center text-sm" role="row">
+                                            <div class="px-4 py-3 border-b border-slate-100 last:border-b-0 grid grid-cols-5 gap-2 items-center text-sm dark:border-slate-700" role="row">
                                                 <div class="col-span-2" role="cell">
-                                                    <div class="font-medium text-slate-900 truncate">{{ $prov?->name ?? 'Unknown' }}</div>
+                                                    <div class="font-medium text-slate-900 truncate dark:text-slate-100">{{ $prov?->name ?? 'Unknown' }}</div>
                                                     @if($prov?->model)
-                                                        <div class="text-xs text-slate-500 truncate">{{ $prov->model }}</div>
+                                                        <div class="text-xs text-slate-500 truncate dark:text-slate-400">{{ $prov->model }}</div>
                                                     @endif
                                                     @if($metric->last_used_at)
-                                                        <div class="text-xs text-slate-400">{{ \Carbon\Carbon::parse($metric->last_used_at)->diffForHumans() }}</div>
+                                                        <div class="text-xs text-slate-400 dark:text-slate-500">{{ \Carbon\Carbon::parse($metric->last_used_at)->diffForHumans() }}</div>
                                                     @endif
                                                 </div>
-                                                <div class="text-right font-bold text-slate-900" role="cell">{{ (int) $metric->total }}</div>
+                                                <div class="text-right font-bold text-slate-900 dark:text-slate-100" role="cell">{{ (int) $metric->total }}</div>
                                                 <div class="text-right" role="cell">
                                                     <span @class([
                                                         'badge text-xs',
@@ -543,7 +543,7 @@
                                                         'badge-red'   => $successRate < 50,
                                                     ]) aria-label="{{ $successRate }}% success rate">{{ $successRate }}%</span>
                                                 </div>
-                                                <div class="text-right text-slate-700 text-xs" role="cell">
+                                                <div class="text-right text-slate-700 text-xs dark:text-slate-300" role="cell">
                                                     {{ $avgDur !== null ? $avgDur.'s' : '—' }}
                                                 </div>
                                             </div>

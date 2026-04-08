@@ -5,8 +5,8 @@
                 <nav class="breadcrumb mb-1" aria-label="Breadcrumb">
                     <a href="{{ route('projects.index') }}" class="breadcrumb-item" aria-current="page">Projects</a>
                 </nav>
-                <h2 class="text-2xl font-bold text-slate-900">Projects</h2>
-                <p class="mt-1 text-sm text-slate-600">Manage your IRB protocol drafts</p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Projects</h2>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Manage your IRB protocol drafts</p>
             </div>
         </div>
     </x-slot>
@@ -39,7 +39,7 @@
 
             <!-- Projects List -->
             <div class="mt-6">
-                <h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Your projects</h3>
+                <h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3 dark:text-slate-400">Your projects</h3>
 
                 @if($projects->isEmpty())
                     <div class="card">
@@ -59,12 +59,12 @@
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($projects as $project)
-                            <a href="{{ route('projects.show', ['project' => $project->uuid]) }}" class="card group hover:shadow-md hover:ring-indigo-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            <a href="{{ route('projects.show', ['project' => $project->uuid]) }}" class="card group hover:shadow-md hover:ring-indigo-200 dark:hover:ring-indigo-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
                                 <div class="p-5">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="flex-1 min-w-0">
-                                            <h4 class="font-semibold text-slate-900 group-hover:text-indigo-600 truncate transition-colors">{{ $project->name }}</h4>
-                                            <p class="text-sm text-slate-600 mt-1">Updated {{ $project->updated_at->diffForHumans() }}</p>
+                                            <h4 class="font-semibold text-slate-900 group-hover:text-indigo-600 truncate transition-colors dark:text-slate-100 dark:group-hover:text-indigo-400">{{ $project->name }}</h4>
+                                            <p class="text-sm text-slate-600 mt-1 dark:text-slate-400">Updated {{ $project->updated_at->diffForHumans() }}</p>
                                         </div>
                                         <span @class([
                                             'badge',
@@ -82,7 +82,7 @@
                                     @endphp
                                     @if($total > 0)
                                         <div class="mt-4">
-                                            <div class="flex items-center justify-between text-xs text-slate-600 mb-1">
+                                            <div class="flex items-center justify-between text-xs text-slate-600 mb-1 dark:text-slate-400">
                                                 <span>Progress</span>
                                                 <span>{{ $done }}/{{ $total }} fields</span>
                                             </div>

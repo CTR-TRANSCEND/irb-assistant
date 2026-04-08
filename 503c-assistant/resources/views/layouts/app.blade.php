@@ -13,15 +13,22 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Apply dark mode before paint to prevent flash -->
+        <script>
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+        </script>
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased dark:bg-slate-900">
         <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-indigo-600 focus:font-semibold">Skip to content</a>
-        <div class="min-h-screen bg-slate-50">
+        <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white border-b border-slate-200">
+                <header class="bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                     <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -34,9 +41,21 @@
             </main>
         </div>
 
-        <!-- Toast notification store -->
+        <!-- Dark mode + Toast notification stores -->
         <script>
         document.addEventListener('alpine:init', () => {
+            Alpine.store('darkMode', {
+                on: localStorage.getItem('darkMode') === 'true',
+                toggle() {
+                    this.on = !this.on;
+                    localStorage.setItem('darkMode', this.on);
+                    document.documentElement.classList.toggle('dark', this.on);
+                },
+                init() {
+                    document.documentElement.classList.toggle('dark', this.on);
+                }
+            });
+
             Alpine.store('toast', {
                 items: [],
                 add(message, type = 'success', duration = 4000) {

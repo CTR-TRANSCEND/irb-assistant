@@ -6,7 +6,7 @@
 
 @layer base {
     body {
-        @apply text-slate-700;
+        @apply text-slate-700 dark:text-slate-200 dark:bg-slate-900;
     }
 }
 
@@ -16,30 +16,30 @@
         @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
     }
     .badge-green {
-        @apply bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20;
+        @apply bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-500/30;
     }
     .badge-amber {
-        @apply bg-amber-50 text-amber-700 ring-1 ring-amber-600/20;
+        @apply bg-amber-50 text-amber-700 ring-1 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-500/30;
     }
     .badge-blue {
-        @apply bg-sky-50 text-sky-700 ring-1 ring-sky-600/20;
+        @apply bg-sky-50 text-sky-700 ring-1 ring-sky-600/20 dark:bg-sky-900/30 dark:text-sky-300 dark:ring-sky-500/30;
     }
     .badge-red {
-        @apply bg-red-50 text-red-700 ring-1 ring-red-600/20;
+        @apply bg-red-50 text-red-700 ring-1 ring-red-600/20 dark:bg-red-900/30 dark:text-red-300 dark:ring-red-500/30;
     }
     .badge-gray {
-        @apply bg-slate-50 text-slate-700 ring-1 ring-slate-500/20;
+        @apply bg-slate-50 text-slate-700 ring-1 ring-slate-500/20 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-500/30;
     }
     .badge-indigo {
-        @apply bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20;
+        @apply bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20 dark:bg-indigo-900/30 dark:text-indigo-300 dark:ring-indigo-500/30;
     }
 
     /* Card component */
     .card {
-        @apply bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5;
+        @apply bg-white rounded-xl shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-white/10 dark:shadow-slate-900/30;
     }
     .card-header {
-        @apply px-6 py-4 border-b border-slate-100;
+        @apply px-6 py-4 border-b border-slate-100 dark:border-slate-700;
     }
     .card-body {
         @apply px-6 py-5;
@@ -47,27 +47,27 @@
 
     /* Tabs */
     .tab-nav {
-        @apply flex gap-1 px-6 border-b border-slate-200;
+        @apply flex gap-1 px-6 border-b border-slate-200 dark:border-slate-700;
     }
     .tab-link {
         @apply px-4 py-3 text-sm font-medium rounded-t-lg transition-colors duration-150 border-b-2 -mb-px;
     }
     .tab-link-active {
-        @apply border-indigo-500 text-indigo-600 bg-indigo-50/50;
+        @apply border-indigo-500 text-indigo-600 bg-indigo-50/50 dark:border-indigo-400 dark:text-indigo-300 dark:bg-indigo-900/20;
     }
     .tab-link-inactive {
-        @apply border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300;
+        @apply border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-600;
     }
 
     /* Stat card */
     .stat-card {
-        @apply flex flex-col gap-1 p-4 rounded-lg bg-slate-50 ring-1 ring-slate-900/5;
+        @apply flex flex-col gap-1 p-4 rounded-lg bg-slate-50 ring-1 ring-slate-900/5 dark:bg-slate-700 dark:ring-white/10;
     }
     .stat-value {
-        @apply text-2xl font-bold text-slate-900;
+        @apply text-2xl font-bold text-slate-900 dark:text-slate-100;
     }
     .stat-label {
-        @apply text-xs font-medium text-slate-600 uppercase tracking-wider;
+        @apply text-xs font-medium text-slate-600 uppercase tracking-wider dark:text-slate-400;
     }
 
     /* Empty state */
@@ -75,13 +75,13 @@
         @apply py-12 text-center;
     }
     .empty-state-icon {
-        @apply mx-auto h-12 w-12 text-slate-400;
+        @apply mx-auto h-12 w-12 text-slate-400 dark:text-slate-500;
     }
     .empty-state-title {
-        @apply mt-3 text-sm font-semibold text-slate-900;
+        @apply mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100;
     }
     .empty-state-text {
-        @apply mt-1 text-sm text-slate-600;
+        @apply mt-1 text-sm text-slate-600 dark:text-slate-400;
     }
 
     /* Alert banners */
@@ -89,21 +89,21 @@
         @apply rounded-lg p-4 text-sm;
     }
     .alert-success {
-        @apply bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600/20;
+        @apply bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-500/30;
     }
     .alert-warning {
-        @apply bg-amber-50 text-amber-800 ring-1 ring-amber-600/20;
+        @apply bg-amber-50 text-amber-800 ring-1 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-500/30;
     }
     .alert-error {
-        @apply bg-red-50 text-red-800 ring-1 ring-red-600/20;
+        @apply bg-red-50 text-red-800 ring-1 ring-red-600/20 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-500/30;
     }
     .alert-info {
-        @apply bg-sky-50 text-sky-800 ring-1 ring-sky-600/20;
+        @apply bg-sky-50 text-sky-800 ring-1 ring-sky-600/20 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-500/30;
     }
 
     /* Progress bar */
     .progress-bar {
-        @apply h-2 w-full rounded-full bg-slate-100 overflow-hidden;
+        @apply h-2 w-full rounded-full bg-slate-100 overflow-hidden dark:bg-slate-700;
     }
     .progress-bar-fill {
         @apply h-full rounded-full bg-indigo-500 transition-all duration-500 ease-out;
@@ -117,16 +117,16 @@
         @apply pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg ring-1 text-sm font-medium max-w-sm;
     }
     .toast-success {
-        @apply bg-emerald-50 text-emerald-800 ring-emerald-600/20;
+        @apply bg-emerald-50 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-900 dark:text-emerald-100 dark:ring-emerald-500/30;
     }
     .toast-error {
-        @apply bg-red-50 text-red-800 ring-red-600/20;
+        @apply bg-red-50 text-red-800 ring-red-600/20 dark:bg-red-900 dark:text-red-100 dark:ring-red-500/30;
     }
     .toast-warning {
-        @apply bg-amber-50 text-amber-800 ring-amber-600/20;
+        @apply bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-900 dark:text-amber-100 dark:ring-amber-500/30;
     }
     .toast-info {
-        @apply bg-sky-50 text-sky-800 ring-sky-600/20;
+        @apply bg-sky-50 text-sky-800 ring-sky-600/20 dark:bg-sky-900 dark:text-sky-100 dark:ring-sky-500/30;
     }
 
     /* Spinner */

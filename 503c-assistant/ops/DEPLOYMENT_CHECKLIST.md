@@ -82,7 +82,9 @@ git grep -nI -E '(password|passwd|secret|token|api[_-]?key|DB_PASS=|DB_PASSWORD=
 - [ ] Copy `.env.example` to `.env` (do not use existing .env)
 - [ ] Generate new APP_KEY: `php artisan key:generate`
 - [ ] Set APP_ENV=production
-- [ ] Set APP_DEBUG=false
+- [ ] **Verify APP_DEBUG=false** — must be false before go-live; exposes stack traces when true
+- [ ] **Verify SESSION_ENCRYPT=true** — encrypts session data at rest using the application key
+- [ ] **Verify SESSION_SECURE_COOKIE=true** — restricts session cookie to HTTPS-only transport
 - [ ] Configure APP_URL with actual production domain
 - [ ] Update TRUSTED_PROXIES in bootstrap/app.php if needed
 
@@ -152,7 +154,9 @@ git grep -nI -E '(password|passwd|secret|token|api[_-]?key|DB_PASS=|DB_PASSWORD=
 
 ### Log Configuration
 - [ ] Set LOG_LEVEL appropriate for production (info or warning, not debug)
-- [ ] Configure log rotation
+- [ ] Set `LOG_CHANNEL=daily` in `.env` to enable daily log rotation
+- [ ] Confirm `config/logging.php` channels.daily.days is set to `14`
+- [ ] Configure OS-level log rotation (logrotate or equivalent) as a secondary safeguard
 - [ ] Ensure logs are not accessible via web
 
 ---
@@ -171,12 +175,19 @@ git grep -nI -E '(password|passwd|secret|token|api[_-]?key|DB_PASS=|DB_PASSWORD=
 
 ### Security Verification
 - [ ] Verify APP_DEBUG is off (no stack traces in browser)
+- [ ] Verify SESSION_ENCRYPT=true is active (check `config/session.php` or `.env`)
+- [ ] Verify SESSION_SECURE_COOKIE=true is active
 - [ ] Verify .env is not accessible via web
 - [ ] Verify storage directory is not accessible via web
 - [ ] Check SSL certificate is valid
 - [ ] Test security headers: https://securityheaders.com
 - [ ] Verify all sensitive data is encrypted at rest (if implemented)
 - [ ] Verify database connections use TLS/SSL (for remote DB)
+
+### Log Rotation Verification
+- [ ] Confirm `storage/logs/` contains date-stamped files (`laravel-YYYY-MM-DD.log`) after first request — confirms `LOG_CHANNEL=daily` is active
+- [ ] Confirm files older than 14 days are absent — confirms the `days=14` retention limit is effective
+- [ ] Verify log files are not world-readable: `ls -la storage/logs/`
 
 ### Performance Checks
 - [ ] Check page load times

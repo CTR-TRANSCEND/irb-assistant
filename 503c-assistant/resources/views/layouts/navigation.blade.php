@@ -1,11 +1,11 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-slate-200">
+<nav x-data="{ open: false }" class="bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center gap-8">
                 <!-- Logo -->
                 <a href="{{ route('projects.index') }}" class="flex items-center gap-3">
                     <x-application-logo class="block h-8 w-auto" />
-                    <span class="hidden sm:block text-lg font-bold text-slate-900">503c Assistant</span>
+                    <span class="hidden sm:block text-lg font-bold text-slate-900 dark:text-white">503c Assistant</span>
                 </a>
 
                 <!-- Navigation Links -->
@@ -24,11 +24,17 @@
                 </div>
             </div>
 
-            <!-- User Dropdown -->
-            <div class="hidden sm:flex sm:items-center">
+            <!-- Right side: dark mode toggle + user dropdown -->
+            <div class="hidden sm:flex sm:items-center gap-2">
+                <!-- Dark mode toggle -->
+                <button @click="$store.darkMode.toggle()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors duration-150" aria-label="Toggle dark mode">
+                    <svg x-show="!$store.darkMode.on" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    <svg x-show="$store.darkMode.on" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </button>
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors duration-150">
+                        <button class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors duration-150 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700">
                             <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
                                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                             </span>
@@ -66,7 +72,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-slate-200">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-slate-200 dark:border-slate-700">
         <div class="pt-2 pb-3 space-y-1 px-4">
             <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                 {{ __('Projects') }}
@@ -79,14 +85,14 @@
             @endif
         </div>
 
-        <div class="pt-4 pb-3 border-t border-slate-200 px-4">
+        <div class="pt-4 pb-3 border-t border-slate-200 dark:border-slate-700 px-4">
             <div class="flex items-center gap-3">
                 <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </span>
                 <div>
-                    <div class="font-medium text-base text-slate-800">{{ Auth::user()->name }}</div>
-                    <div class="text-sm text-slate-600">{{ Auth::user()->email }}</div>
+                    <div class="font-medium text-base text-slate-800 dark:text-slate-200">{{ Auth::user()->name }}</div>
+                    <div class="text-sm text-slate-600 dark:text-slate-400">{{ Auth::user()->email }}</div>
                 </div>
             </div>
 

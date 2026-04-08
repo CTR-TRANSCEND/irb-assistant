@@ -12,6 +12,60 @@ This app processes sensitive clinical/research documents. Treat this checklist a
 - [x] Role-based admin access enforced via middleware (`admin`).
 - [x] Disabled accounts are denied access via middleware (`EnsureUserIsActive`).
 
+## Session security (production)
+
+Set the following in your production `.env`:
+
+```
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true
+```
+
+- `SESSION_ENCRYPT=true` — encrypts all session data at rest using the application key.
+- `SESSION_SECURE_COOKIE=true` — ensures the session cookie is only sent over HTTPS.
+
+## Rate limiting
+
+The following routes are protected by Laravel's built-in throttle middleware:
+
+| Route | Middleware / Limit |
+|-------|--------------------|
+| `POST /login` | `throttle:5,1` (5 attempts per minute) |
+| `POST /register` | `throttle:5,1` |
+| `POST /forgot-password` | `throttle:5,1` |
+| `POST /reset-password` | `throttle:5,1` |
+| `GET|POST /confirm-password` | `throttle:6,1` |
+| `PUT /password` (profile password update) | `throttle:6,1` |
+| `POST /email/verification-notification` | `throttle:6,1` |
+| Export download endpoint | ownership check + standard web throttle |
+
+## Debug mode
+
+`APP_DEBUG` **must be `false`** in production. Leaving it `true` exposes full stack traces, environment variables, and configuration values in error pages.
+
+```
+APP_DEBUG=false
+```
+
+## Log rotation
+
+Configure Laravel to use the `daily` log channel with 14-day retention to prevent unbounded log growth:
+
+In `.env`:
+```
+LOG_CHANNEL=daily
+```
+
+In `config/logging.php`, confirm the `daily` channel entry includes:
+```php
+'daily' => [
+    'driver' => 'daily',
+    'path'   => storage_path('logs/laravel.log'),
+    'level'  => env('LOG_LEVEL', 'debug'),
+    'days'   => 14,
+],
+```
+
 ## Authorization
 
 - [x] Users can only access their own projects (owner_user_id checks).
@@ -59,7 +113,7 @@ This app processes sensitive clinical/research documents. Treat this checklist a
 - [x] Sample Apache reverse proxy config + strict headers provided under `ops/apache/`.
 - [ ] Production Apache configuration and verification (deployment step).
 - [ ] Restrict log verbosity in production and avoid writing document content to logs.
-- [ ] Rotate logs and protect backups.
+- [ ] Rotate logs and protect backups (set `LOG_CHANNEL=daily`, `days=14` in `config/logging.php`).
 
 ## Reverse proxy correctness
 
