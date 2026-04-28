@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\AnalysisRun;
 use App\Models\DocumentChunk;
 use App\Models\FieldEvidence;
 use App\Models\LlmProvider;
 use App\Models\Project;
-use App\Models\AnalysisRun;
 use App\Models\ProjectFieldValue;
 use App\Models\TemplateControlMapping;
 use App\Models\TemplateVersion;
@@ -67,6 +67,7 @@ class ProjectAnalysisService
             ->take((int) env('IRB_MAX_CHUNKS_SENT', 40))
             ->map(function (DocumentChunk $c) {
                 $docName = $c->document?->original_filename;
+
                 return [
                     'chunk_id' => $c->id,
                     'document' => $docName,
@@ -184,98 +185,98 @@ class ProjectAnalysisService
                 ];
 
                 foreach ($batchResults as $row) {
-                if (! is_array($row)) {
-                    continue;
-                }
-                $fieldKey = $row['field_key'] ?? null;
-                $valueText = $row['value'] ?? null;
+                    if (! is_array($row)) {
+                        continue;
+                    }
+                    $fieldKey = $row['field_key'] ?? null;
+                    $valueText = $row['value'] ?? null;
 
-                if (! is_string($fieldKey) || ! is_string($valueText)) {
-                    continue;
-                }
+                    if (! is_string($fieldKey) || ! is_string($valueText)) {
+                        continue;
+                    }
 
-                $pv = $values->first(fn (ProjectFieldValue $v) => $v->field?->key === $fieldKey);
-                if ($pv === null) {
-                    continue;
-                }
+                    $pv = $values->first(fn (ProjectFieldValue $v) => $v->field?->key === $fieldKey);
+                    if ($pv === null) {
+                        continue;
+                    }
 
-                if ($pv->final_value !== null && trim($pv->final_value) !== '') {
-                    continue;
-                }
+                    if ($pv->final_value !== null && trim($pv->final_value) !== '') {
+                        continue;
+                    }
 
-                if (in_array($pv->status, ['confirmed', 'edited'], true)) {
-                    continue;
-                }
+                    if (in_array($pv->status, ['confirmed', 'edited'], true)) {
+                        continue;
+                    }
 
-                if ($pv->suggested_value !== null && trim($pv->suggested_value) !== '') {
-                    continue;
-                }
+                    if ($pv->suggested_value !== null && trim($pv->suggested_value) !== '') {
+                        continue;
+                    }
 
-                $valueText = trim($valueText);
-                if ($valueText === '') {
-                    continue;
-                }
+                    $valueText = trim($valueText);
+                    if ($valueText === '') {
+                        continue;
+                    }
 
-                $evidenceRows = $row['evidence'] ?? [];
-                $toInsert = [];
-                if (is_array($evidenceRows)) {
-                    foreach ($evidenceRows as $ev) {
-                        if (! is_array($ev)) {
-                            continue;
+                    $evidenceRows = $row['evidence'] ?? [];
+                    $toInsert = [];
+                    if (is_array($evidenceRows)) {
+                        foreach ($evidenceRows as $ev) {
+                            if (! is_array($ev)) {
+                                continue;
+                            }
+                            $chunkId = $ev['chunk_id'] ?? null;
+                            $quote = $ev['quote'] ?? null;
+                            if (! is_int($chunkId) && ! (is_string($chunkId) && ctype_digit($chunkId))) {
+                                continue;
+                            }
+                            if (! is_string($quote) || trim($quote) === '') {
+                                continue;
+                            }
+
+                            $chunkIdInt = (int) $chunkId;
+                            if (! $chunkTextById->has($chunkIdInt)) {
+                                continue;
+                            }
+
+                            $quote = trim($quote);
+                            $chunkText = (string) $chunkTextById->get($chunkIdInt, '');
+                            $startOffset = mb_strpos($chunkText, $quote);
+                            if ($startOffset === false) {
+                                continue;
+                            }
+                            $endOffset = $startOffset + mb_strlen($quote);
+
+                            $toInsert[] = [
+                                'analysis_run_id' => $run->id,
+                                'project_field_value_id' => $pv->id,
+                                'document_chunk_id' => $chunkIdInt,
+                                'excerpt_text' => $quote,
+                                'excerpt_sha256' => hash('sha256', $quote),
+                                'start_offset' => $startOffset,
+                                'end_offset' => $endOffset,
+                            ];
                         }
-                        $chunkId = $ev['chunk_id'] ?? null;
-                        $quote = $ev['quote'] ?? null;
-                        if (! is_int($chunkId) && ! (is_string($chunkId) && ctype_digit($chunkId))) {
-                            continue;
-                        }
-                        if (! is_string($quote) || trim($quote) === '') {
-                            continue;
-                        }
+                    }
 
-                        $chunkIdInt = (int) $chunkId;
-                        if (! $chunkTextById->has($chunkIdInt)) {
-                            continue;
-                        }
+                    // Require evidence for non-empty suggestions.
+                    if (count($toInsert) === 0) {
+                        continue;
+                    }
 
-                        $quote = trim($quote);
-                        $chunkText = (string) $chunkTextById->get($chunkIdInt, '');
-                        $startOffset = mb_strpos($chunkText, $quote);
-                        if ($startOffset === false) {
-                            continue;
-                        }
-                        $endOffset = $startOffset + mb_strlen($quote);
+                    $pv->analysis_run_id = $run->id;
+                    $pv->suggested_value = $valueText;
+                    $pv->status = 'suggested';
+                    $pv->suggested_at = now();
+                    $pv->confidence = isset($row['confidence']) && is_numeric($row['confidence']) ? (float) $row['confidence'] : null;
+                    $pv->updated_by_user_id = $actorUserId;
+                    $pv->save();
 
-                        $toInsert[] = [
-                            'analysis_run_id' => $run->id,
-                            'project_field_value_id' => $pv->id,
-                            'document_chunk_id' => $chunkIdInt,
-                            'excerpt_text' => $quote,
-                            'excerpt_sha256' => hash('sha256', $quote),
-                            'start_offset' => $startOffset,
-                            'end_offset' => $endOffset,
-                        ];
+                    FieldEvidence::query()->where('project_field_value_id', $pv->id)->delete();
+
+                    foreach ($toInsert as $rowIns) {
+                        FieldEvidence::query()->create($rowIns);
                     }
                 }
-
-                // Require evidence for non-empty suggestions.
-                if (count($toInsert) === 0) {
-                    continue;
-                }
-
-                $pv->analysis_run_id = $run->id;
-                $pv->suggested_value = $valueText;
-                $pv->status = 'suggested';
-                $pv->suggested_at = now();
-                $pv->confidence = isset($row['confidence']) && is_numeric($row['confidence']) ? (float) $row['confidence'] : null;
-                $pv->updated_by_user_id = $actorUserId;
-                $pv->save();
-
-                FieldEvidence::query()->where('project_field_value_id', $pv->id)->delete();
-
-                foreach ($toInsert as $rowIns) {
-                    FieldEvidence::query()->create($rowIns);
-                }
-            }
             }
 
             $run->update([
@@ -309,8 +310,8 @@ class ProjectAnalysisService
     }
 
     /**
-     * @param list<array{field_key: string, label: string}> $fields
-     * @param list<array{chunk_id: int, document: string|null, page: int|null, text: string}> $chunks
+     * @param  list<array{field_key: string, label: string}>  $fields
+     * @param  list<array{chunk_id: int, document: string|null, page: int|null, text: string}>  $chunks
      */
     private function buildPrompt(array $fields, array $chunks): string
     {

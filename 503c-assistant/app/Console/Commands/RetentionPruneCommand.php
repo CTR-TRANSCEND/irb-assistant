@@ -38,6 +38,7 @@ class RetentionPruneCommand extends Command
         if (is_string($daysOpt) && $daysOpt !== '') {
             if (! ctype_digit($daysOpt)) {
                 $this->error('--days must be an integer');
+
                 return self::FAILURE;
             }
             $days = (int) $daysOpt;
@@ -46,6 +47,7 @@ class RetentionPruneCommand extends Command
         $days = $days ?? $settings->int('retention_days', (int) env('IRB_RETENTION_DAYS', 14));
         if ($days < 1) {
             $this->error('Retention days must be >= 1');
+
             return self::FAILURE;
         }
 

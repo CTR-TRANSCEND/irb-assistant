@@ -101,7 +101,7 @@ class AdminObservabilityTest extends TestCase
 
         $secret = 'SECRET_DETAIL_PAYLOAD_XYZ';
 
-        $startedAt  = now()->subSeconds(10);
+        $startedAt = now()->subSeconds(10);
         $finishedAt = $startedAt->copy()->addSeconds(10);
 
         // Seed a payload matching the shape produced by ProjectAnalysisService::redactResponsePayload().

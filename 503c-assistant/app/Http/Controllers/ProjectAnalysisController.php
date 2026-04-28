@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\LlmProvider;
+use App\Models\Project;
 use App\Services\AuditService;
 use App\Services\LlmChatService;
 use App\Services\ProjectAnalysisService;
@@ -53,7 +53,6 @@ class ProjectAnalysisController extends Controller
                 ->route('projects.show', ['project' => $project->uuid, 'tab' => 'documents'])
                 ->with('status', 'No enabled LLM provider available under current system policy. Admin must configure one first.');
         }
-
 
         $templates->ensureDefaultTemplateInstalled(uploadedByUserId: $request->user()->id);
         $init->ensureProjectFieldValuesExist($project);

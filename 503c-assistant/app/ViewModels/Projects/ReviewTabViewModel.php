@@ -13,8 +13,7 @@ class ReviewTabViewModel
     public function __construct(
         private Project $project,
         private ?ProjectFieldValue $selected = null
-    ) {
-    }
+    ) {}
 
     /**
      * Prepare data for the review field list component.
@@ -44,7 +43,7 @@ class ReviewTabViewModel
                 'key' => $key,
                 'search_text' => strtolower($key.' '.$label),
                 'is_selected' => $this->selected && $this->selected->id === $fv->id,
-                'badge_class' => match($fv->status) {
+                'badge_class' => match ($fv->status) {
                     'confirmed' => 'bg-green-50 text-green-700 border-green-200',
                     'edited' => 'bg-amber-50 text-amber-800 border-amber-200',
                     'suggested' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -201,8 +200,6 @@ class ReviewTabViewModel
 
     /**
      * Get empty field editor data structure.
-     *
-     * @return array
      */
     private function getEmptyFieldEditorData(): array
     {
@@ -223,8 +220,6 @@ class ReviewTabViewModel
 
     /**
      * Get empty evidence viewer data structure.
-     *
-     * @return array
      */
     private function getEmptyEvidenceViewerData(): array
     {

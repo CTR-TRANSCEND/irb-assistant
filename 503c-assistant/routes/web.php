@@ -7,10 +7,10 @@ use App\Http\Controllers\AdminTemplateController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectAnalysisController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectDocumentController;
 use App\Http\Controllers\ProjectFieldController;
-use App\Http\Controllers\ProjectAnalysisController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 

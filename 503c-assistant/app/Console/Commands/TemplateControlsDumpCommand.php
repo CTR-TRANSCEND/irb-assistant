@@ -25,6 +25,7 @@ class TemplateControlsDumpCommand extends Command
             $template = TemplateVersion::query()->where('uuid', $templateUuid)->first();
             if ($template === null) {
                 $this->error('Template not found for uuid: '.$templateUuid);
+
                 return self::FAILURE;
             }
         }
@@ -71,6 +72,7 @@ class TemplateControlsDumpCommand extends Command
         $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         if (! is_string($json)) {
             $this->error('Failed to encode control dump as JSON.');
+
             return self::FAILURE;
         }
 

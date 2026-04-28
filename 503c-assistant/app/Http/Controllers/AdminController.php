@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\LlmProvider;
 use App\Models\AnalysisRun;
 use App\Models\AuditEvent;
+use App\Models\LlmProvider;
 use App\Models\TemplateControl;
 use App\Models\TemplateControlMapping;
 use App\Models\TemplateVersion;
@@ -72,12 +72,12 @@ class AdminController extends Controller
             $data['providerMetrics'] = AnalysisRun::query()
                 ->selectRaw(
                     'llm_provider_id,'
-                    . ' COUNT(*) as total,'
-                    . ' SUM(CASE WHEN status = \'succeeded\' THEN 1 ELSE 0 END) as succeeded,'
-                    . ' SUM(CASE WHEN status = \'failed\' THEN 1 ELSE 0 END) as failed,'
-                    . ' AVG(CASE WHEN finished_at IS NOT NULL AND started_at IS NOT NULL'
-                    . '     THEN TIMESTAMPDIFF(SECOND, started_at, finished_at) ELSE NULL END) as avg_duration_s,'
-                    . ' MAX(created_at) as last_used_at'
+                    .' COUNT(*) as total,'
+                    .' SUM(CASE WHEN status = \'succeeded\' THEN 1 ELSE 0 END) as succeeded,'
+                    .' SUM(CASE WHEN status = \'failed\' THEN 1 ELSE 0 END) as failed,'
+                    .' AVG(CASE WHEN finished_at IS NOT NULL AND started_at IS NOT NULL'
+                    .'     THEN TIMESTAMPDIFF(SECOND, started_at, finished_at) ELSE NULL END) as avg_duration_s,'
+                    .' MAX(created_at) as last_used_at'
                 )
                 ->groupBy('llm_provider_id')
                 ->orderByDesc('total')
@@ -87,15 +87,15 @@ class AdminController extends Controller
             // Overall totals via real DB aggregate to avoid 200-row cap inaccuracy.
             $overall = AnalysisRun::query()
                 ->selectRaw(
-                    "COUNT(*) as total,"
-                    . " SUM(CASE WHEN status = 'succeeded' THEN 1 ELSE 0 END) as succeeded,"
-                    . " SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed"
+                    'COUNT(*) as total,'
+                    ." SUM(CASE WHEN status = 'succeeded' THEN 1 ELSE 0 END) as succeeded,"
+                    ." SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed"
                 )
                 ->first();
             $data['overallStats'] = [
-                'total'     => (int) ($overall->total ?? 0),
+                'total' => (int) ($overall->total ?? 0),
                 'succeeded' => (int) ($overall->succeeded ?? 0),
-                'failed'    => (int) ($overall->failed ?? 0),
+                'failed' => (int) ($overall->failed ?? 0),
             ];
         }
 
@@ -128,9 +128,9 @@ class AdminController extends Controller
         }
 
         return view('admin.runs.show', [
-            'run'             => $run,
+            'run' => $run,
             'durationSeconds' => $durationSeconds,
-            'fieldCount'      => $fieldCount,
+            'fieldCount' => $fieldCount,
         ]);
     }
 }

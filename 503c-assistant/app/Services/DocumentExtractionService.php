@@ -13,9 +13,7 @@ use Symfony\Component\Process\Process;
 
 class DocumentExtractionService
 {
-    public function __construct(private FileEncryptionService $fileEncryption)
-    {
-    }
+    public function __construct(private FileEncryptionService $fileEncryption) {}
 
     public function extract(ProjectDocument $document): void
     {
@@ -115,7 +113,7 @@ class DocumentExtractionService
         ini_set('memory_limit', $memoryLimit.'M');
 
         try {
-            $parser = new PdfParser();
+            $parser = new PdfParser;
             $pdf = $parser->parseFile($path);
             $text = $pdf->getText();
         } finally {
@@ -138,7 +136,7 @@ class DocumentExtractionService
             throw new \RuntimeException('DOCX missing word/document.xml');
         }
 
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         $dom->preserveWhiteSpace = false;
         $dom->loadXML($xml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
 
@@ -230,6 +228,7 @@ class DocumentExtractionService
             $candidate = $buf === '' ? $p : ($buf."\n\n".$p);
             if (mb_strlen($candidate) <= $targetChars) {
                 $buf = $candidate;
+
                 continue;
             }
 
@@ -240,6 +239,7 @@ class DocumentExtractionService
 
             if (mb_strlen($p) <= $targetChars) {
                 $buf = $p;
+
                 continue;
             }
 

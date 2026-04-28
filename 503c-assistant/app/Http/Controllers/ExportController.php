@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\Export;
+use App\Models\Project;
 use App\Services\AuditService;
 use App\Services\DocxExportService;
 use App\Services\FileEncryptionService;
@@ -19,8 +19,7 @@ class ExportController extends Controller
         Project $project,
         DocxExportService $exports,
         AuditService $audit,
-    ): \Illuminate\Http\RedirectResponse
-    {
+    ): \Illuminate\Http\RedirectResponse {
         if ($project->owner_user_id !== $request->user()->id) {
             abort(404);
         }

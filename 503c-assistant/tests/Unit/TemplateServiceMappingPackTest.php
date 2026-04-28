@@ -19,6 +19,7 @@ class TemplateServiceMappingPackTest extends TestCase
     use RefreshDatabase;
 
     private const BUNDLED_TEMPLATE_SHA256 = '470fe073cfb6f3572095e4a323e2ff00b2ffadb1fbec1017abc3f89db5db059f';
+
     private const BUNDLED_TITLE_SIG_SHA256 = '47b5f3636c4d4b2c3709ef790d994c8b12ab2090fec9627dde90b308e11b14d8';
 
     public function test_bundled_pack_applies_curated_mapping_and_is_idempotent(): void

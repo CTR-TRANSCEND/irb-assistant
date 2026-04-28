@@ -31,6 +31,7 @@ class TemplateService
             $this->scanControls($existing);
             $this->applyBundledMappingPack($existing);
             $this->seedFieldDefinitionsFromControls($existing, createMappings: true, onlyUnmappedControls: true);
+
             return $existing;
         }
 
@@ -129,20 +130,24 @@ class TemplateService
 
             if ($f === 'word/document.xml') {
                 $parts['document'] = $f;
+
                 continue;
             }
             if ($f === 'word/endnotes.xml') {
                 $parts['endnotes'] = $f;
+
                 continue;
             }
             if ($f === 'word/footnotes.xml') {
                 $parts['footnotes'] = $f;
+
                 continue;
             }
 
             $m = [];
             if (preg_match('~^word/(header|footer)(\d+)\.xml$~', $f, $m) === 1) {
                 $parts[(string) ($m[1].$m[2])] = $f;
+
                 continue;
             }
         }
@@ -166,10 +171,12 @@ class TemplateService
         foreach ($parts as $k => $path) {
             if (preg_match('/^header(\d+)$/', (string) $k, $m) === 1) {
                 $headers[(int) $m[1]] = $path;
+
                 continue;
             }
             if (preg_match('/^footer(\d+)$/', (string) $k, $m) === 1) {
                 $footers[(int) $m[1]] = $path;
+
                 continue;
             }
             $ordered[(string) $k] = $path;
@@ -192,8 +199,7 @@ class TemplateService
         TemplateVersion $templateVersion,
         bool $createMappings = true,
         bool $onlyUnmappedControls = false,
-    ): void
-    {
+    ): void {
         $controls = TemplateControl::query()
             ->where('template_version_id', $templateVersion->id)
             ->orderBy('part')
@@ -575,6 +581,7 @@ class TemplateService
 
             if ($container !== null && $child->isSameNode($container)) {
                 $segments[] = ['type' => 'sdt', 'node' => $child];
+
                 continue;
             }
 

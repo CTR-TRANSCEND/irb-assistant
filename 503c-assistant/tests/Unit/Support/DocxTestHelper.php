@@ -11,7 +11,7 @@ class DocxTestHelper
     /**
      * Create a minimal .docx by zipping provided parts.
      *
-     * @param array<string, string> $files relative path => contents
+     * @param  array<string, string>  $files  relative path => contents
      */
     public static function makeDocx(string $targetPath, array $files): void
     {

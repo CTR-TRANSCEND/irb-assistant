@@ -215,7 +215,7 @@ class DocxExportServiceTest extends TestCase
         $outAbs = Storage::disk('local')->path((string) $export->storage_path);
         $xml = DocxTestHelper::unzipPrint($outAbs, 'word/document.xml');
 
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         $this->assertTrue($dom->loadXML($xml));
 
         $xpath = new \DOMXPath($dom);

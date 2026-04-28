@@ -354,6 +354,7 @@ class AdminTemplateController extends Controller
                 if ($as === $bs) {
                     return 0;
                 }
+
                 return $as > $bs ? -1 : 1;
             });
 
@@ -588,6 +589,7 @@ class AdminTemplateController extends Controller
 
             if ($fieldId === null) {
                 TemplateControlMapping::query()->where('template_control_id', $ctrl->id)->delete();
+
                 continue;
             }
 

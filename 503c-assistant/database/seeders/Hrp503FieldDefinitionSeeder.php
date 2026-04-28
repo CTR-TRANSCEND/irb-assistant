@@ -366,11 +366,11 @@ class Hrp503FieldDefinitionSeeder extends Seeder
             FieldDefinition::query()->updateOrCreate(
                 ['key' => $key],
                 [
-                    'label'         => $label,
-                    'section'       => 'HRP-503: '.$section,
-                    'sort_order'    => (int) $sortOrder,
-                    'is_required'   => (bool) $required,
-                    'input_type'    => $inputType,
+                    'label' => $label,
+                    'section' => 'HRP-503: '.$section,
+                    'sort_order' => (int) $sortOrder,
+                    'is_required' => (bool) $required,
+                    'input_type' => $inputType,
                     'question_text' => $questionText,
                 ],
             );

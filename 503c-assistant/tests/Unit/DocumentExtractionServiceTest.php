@@ -25,14 +25,14 @@ class DocumentExtractionServiceTest extends TestCase
         $stream = "BT\n/F1 24 Tf\n72 120 Td\n(".$this->escapePdfString($text).") Tj\nET\n";
 
         $objects = [
-            1 => "<< /Type /Catalog /Pages 2 0 R >>",
-            2 => "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            3 => "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> >>",
-            4 => "<< /Length ".strlen($stream)." >>\nstream\n".$stream."endstream",
-            5 => "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            1 => '<< /Type /Catalog /Pages 2 0 R >>',
+            2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> >>',
+            4 => '<< /Length '.strlen($stream)." >>\nstream\n".$stream.'endstream',
+            5 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
         ];
 
-        $pdf = "%PDF-1.4\n"."%".chr(0xE2).chr(0xE3).chr(0xCF).chr(0xD3)."\n";
+        $pdf = "%PDF-1.4\n".'%'.chr(0xE2).chr(0xE3).chr(0xCF).chr(0xD3)."\n";
         $offsets = [];
 
         foreach ($objects as $i => $body) {
@@ -42,14 +42,14 @@ class DocumentExtractionServiceTest extends TestCase
 
         $xrefOffset = strlen($pdf);
         $pdf .= "xref\n";
-        $pdf .= "0 ".(count($objects) + 1)."\n";
+        $pdf .= '0 '.(count($objects) + 1)."\n";
         $pdf .= sprintf("%010d %05d f \n", 0, 65535);
         foreach (array_keys($objects) as $i) {
             $pdf .= sprintf("%010d %05d n \n", $offsets[$i], 0);
         }
 
         $pdf .= "trailer\n";
-        $pdf .= "<< /Size ".(count($objects) + 1)." /Root 1 0 R >>\n";
+        $pdf .= '<< /Size '.(count($objects) + 1)." /Root 1 0 R >>\n";
         $pdf .= "startxref\n".$xrefOffset."\n";
         $pdf .= "%%EOF\n";
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\DocumentChunk;
+use App\Models\Project;
 use App\Models\ProjectDocument;
 use App\Services\AuditService;
 use App\Services\DocumentExtractionService;
@@ -45,6 +45,7 @@ class ProjectDocumentController extends Controller
         foreach ($files as $file) {
             if (! $file->isValid()) {
                 $skipped++;
+
                 continue;
             }
 
@@ -55,6 +56,7 @@ class ProjectDocumentController extends Controller
 
             if (! in_array($kind, ['pdf', 'docx', 'txt'], true)) {
                 $skipped++;
+
                 continue;
             }
 

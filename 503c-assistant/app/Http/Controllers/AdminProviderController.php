@@ -199,7 +199,7 @@ class AdminProviderController extends Controller
     }
 
     /**
-     * @param array<string, mixed>|null $data
+     * @param  array<string, mixed>|null  $data
      * @return array<string, mixed>|null
      */
     private function sanitizeProviderForAudit(?array $data): ?array

@@ -78,10 +78,10 @@ class SettingsServiceTest extends TestCase
     public static function truthyStringProvider(): array
     {
         return [
-            "'1'"    => ['1'],
+            "'1'" => ['1'],
             "'true'" => ['true'],
-            "'yes'"  => ['yes'],
-            "'on'"   => ['on'],
+            "'yes'" => ['yes'],
+            "'on'" => ['on'],
         ];
     }
 
@@ -101,11 +101,11 @@ class SettingsServiceTest extends TestCase
     public static function falsyStringProvider(): array
     {
         return [
-            "'0'"     => ['0'],
+            "'0'" => ['0'],
             "'false'" => ['false'],
-            "'no'"    => ['no'],
-            "'off'"   => ['off'],
-            "''"      => [''],
+            "'no'" => ['no'],
+            "'off'" => ['off'],
+            "''" => [''],
         ];
     }
 

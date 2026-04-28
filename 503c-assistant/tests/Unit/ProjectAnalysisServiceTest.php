@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Models\AnalysisRun;
 use App\Models\DocumentChunk;
 use App\Models\FieldDefinition;
 use App\Models\FieldEvidence;
@@ -11,7 +12,6 @@ use App\Models\LlmProvider;
 use App\Models\Project;
 use App\Models\ProjectDocument;
 use App\Models\ProjectFieldValue;
-use App\Models\AnalysisRun;
 use App\Models\TemplateControl;
 use App\Models\TemplateControlMapping;
 use App\Models\TemplateVersion;
@@ -19,8 +19,8 @@ use App\Models\User;
 use App\Services\LlmChatService;
 use App\Services\ProjectAnalysisService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 

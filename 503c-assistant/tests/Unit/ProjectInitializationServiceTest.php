@@ -67,7 +67,7 @@ class ProjectInitializationServiceTest extends TestCase
             'mapped_by_user_id' => $user->id,
         ]);
 
-        $svc = new ProjectInitializationService();
+        $svc = new ProjectInitializationService;
         $svc->ensureProjectFieldValuesExist($project);
 
         $this->assertDatabaseHas('project_field_values', [
@@ -119,7 +119,7 @@ class ProjectInitializationServiceTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        $svc = new ProjectInitializationService();
+        $svc = new ProjectInitializationService;
         $svc->ensureProjectFieldValuesExist($project);
 
         $this->assertDatabaseHas('project_field_values', [

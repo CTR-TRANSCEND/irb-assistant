@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\LlmProvider;
 use App\Models\Project;
 use App\Models\ProjectFieldValue;
-use App\Models\LlmProvider;
 use App\Services\AuditService;
 use App\Services\ProjectInitializationService;
 use App\Services\ProjectPurgeService;
-use App\Services\TemplateService;
 use App\Services\SettingsService;
+use App\Services\TemplateService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProjectController extends Controller
@@ -63,8 +63,7 @@ class ProjectController extends Controller
         TemplateService $templates,
         ProjectInitializationService $init,
         SettingsService $settings,
-    ): View
-    {
+    ): View {
         if ($project->owner_user_id !== $request->user()->id) {
             abort(404);
         }

@@ -16,9 +16,7 @@ use Symfony\Component\Process\Process;
 
 class DocxExportService
 {
-    public function __construct(private FileEncryptionService $fileEncryption)
-    {
-    }
+    public function __construct(private FileEncryptionService $fileEncryption) {}
 
     public function generate(Project $project, int $actorUserId): Export
     {
@@ -141,7 +139,7 @@ class DocxExportService
     }
 
     /**
-     * @param array<int, string> $controlIndexToValue
+     * @param  array<int, string>  $controlIndexToValue
      */
     private function fillSdtPart(string $tmpDirAbs, string $part, string $innerPath, array $controlIndexToValue): void
     {
@@ -159,7 +157,7 @@ class DocxExportService
             throw new \RuntimeException('Failed to read '.$innerPath);
         }
 
-        $dom = new \DOMDocument();
+        $dom = new \DOMDocument;
         $dom->preserveWhiteSpace = false;
 
         $internalErrors = libxml_use_internal_errors(true);
@@ -243,6 +241,7 @@ class DocxExportService
             $r = $dom->createElementNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'w:r');
             $this->appendTextWithBreaks($dom, $r, $lines);
             $sdtContent->appendChild($r);
+
             return;
         }
 
