@@ -159,6 +159,92 @@ class ProjectFieldControllerTest extends TestCase
         ]);
     }
 
+    public function test_confirm_then_edit_clears_confirmed_at(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+            'is_active' => true,
+        ]);
+
+        /** @var Project $project */
+        /** @var ProjectFieldValue $fieldValue */
+        [$project, $fieldValue] = $this->createProjectWithField($user);
+
+        // Step 1: confirm the field
+        $this->actingAs($user)->post(
+            route('projects.fields.update', [
+                'project' => $project->uuid,
+                'value' => $fieldValue->id,
+            ]),
+            [
+                'final_value' => 'Original Suggestion',
+                'confirm' => true,
+            ]
+        )->assertRedirect();
+
+        $fieldValue->refresh();
+        $this->assertSame('confirmed', $fieldValue->status);
+        $this->assertNotNull($fieldValue->confirmed_at);
+
+        // Step 2: edit without confirm — status must become 'edited' and confirmed_at must be null
+        $this->actingAs($user)->post(
+            route('projects.fields.update', [
+                'project' => $project->uuid,
+                'value' => $fieldValue->id,
+            ]),
+            [
+                'final_value' => 'A Different Value',
+            ]
+        )->assertRedirect();
+
+        $fieldValue->refresh();
+        $this->assertSame('edited', $fieldValue->status);
+        $this->assertNull($fieldValue->confirmed_at);
+    }
+
+    public function test_confirm_then_clear_to_missing_clears_confirmed_at(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+            'is_active' => true,
+        ]);
+
+        /** @var Project $project */
+        /** @var ProjectFieldValue $fieldValue */
+        [$project, $fieldValue] = $this->createProjectWithField($user);
+
+        // Step 1: confirm the field
+        $this->actingAs($user)->post(
+            route('projects.fields.update', [
+                'project' => $project->uuid,
+                'value' => $fieldValue->id,
+            ]),
+            [
+                'final_value' => 'Original Suggestion',
+                'confirm' => true,
+            ]
+        )->assertRedirect();
+
+        $fieldValue->refresh();
+        $this->assertSame('confirmed', $fieldValue->status);
+        $this->assertNotNull($fieldValue->confirmed_at);
+
+        // Step 2: clear final_value without confirm — status must become 'missing' and confirmed_at must be null
+        $this->actingAs($user)->post(
+            route('projects.fields.update', [
+                'project' => $project->uuid,
+                'value' => $fieldValue->id,
+            ]),
+            [
+                'final_value' => '',
+            ]
+        )->assertRedirect();
+
+        $fieldValue->refresh();
+        $this->assertSame('missing', $fieldValue->status);
+        $this->assertNull($fieldValue->confirmed_at);
+    }
+
     public function test_validates_max_length(): void
     {
         $user = User::factory()->create([

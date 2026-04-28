@@ -41,7 +41,6 @@ class ProjectFieldController extends Controller
 
         if (($data['confirm'] ?? false) === true) {
             $value->status = $value->final_value === null || trim($value->final_value) === '' ? 'missing' : 'confirmed';
-            $value->confirmed_at = $value->status === 'confirmed' ? now() : null;
         } else {
             if ($value->final_value !== null && trim($value->final_value) !== '') {
                 $value->status = $value->suggested_value === $value->final_value ? 'suggested' : 'edited';
@@ -49,6 +48,8 @@ class ProjectFieldController extends Controller
                 $value->status = 'missing';
             }
         }
+
+        $value->confirmed_at = $value->status === 'confirmed' ? now() : null;
 
         $value->save();
 
