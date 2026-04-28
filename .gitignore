@@ -181,6 +181,12 @@ secret-*.*
 .moai/status_line.sh
 .moai/memory/
 .moai/worktrees/
+.moai/cache/
+.moai/state/
+.moai/plans/
+.moai/logs/
+.moai/reports/
+.moai/learning/
 
 # ===========================================
 # Evolution Telemetry (local-only usage data)
@@ -214,13 +220,14 @@ dist-ssr/
 
 # User Custom Patterns (preserved by moai update)
 .claude/
-.moai/
 .agency/
 .mcp.json
-CLAUDE.md
-PROJECT_HANDOFF.md
-PROJECT_LOG.md
 resume_session.txt
+
+# Sensitive research source materials (TAVR project, real PHI/PII).
+# Do NOT track even in private repo — GitHub is not HIPAA-BAA-covered.
+# Store these in UND OneDrive / REDCap / institutional storage instead.
 docs/
+
 503c-assistant/.claude/
 503c-assistant/.playwright/
