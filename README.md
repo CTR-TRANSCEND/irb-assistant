@@ -3,7 +3,7 @@
 > [!CAUTION]
 > **Under Active Development** -- This project is in early development and is **not ready for production use**. Features, APIs, and data schemas may change without notice. Use in development/testing environments only.
 
-A local-first web application that helps researchers draft **HRP-503c** (Human Research Engagement Determination) IRB forms from uploaded study documents.
+A local-first web application that helps researchers draft **HRP-503c** (Human Research Engagement Determination) and **HRP-503** (full Human Research Protocol) IRB forms from uploaded study documents.
 
 ## How It Works
 
@@ -58,7 +58,7 @@ Upload Documents  -->  Extract & Chunk  -->  LLM Analysis  -->  Review & Edit  -
 | Database | MySQL / MariaDB (user-space, no sudo) |
 | Frontend | Blade + Tailwind CSS + Alpine.js |
 | Build | Vite |
-| Tests | PHPUnit (114 tests, 363 assertions) |
+| Tests | PHPUnit (142 tests, 451 assertions) + Playwright (21 E2E specs) |
 
 ## Quick Start
 
@@ -143,8 +143,8 @@ cd 503c-assistant
     seeders/                # Admin user, field definitions, template seeder
     factories/              # 7 model factories for testing
   resources/
-    mapping-packs/          # Bundled HRP-503c field mappings (7 fields)
-    templates/              # HRP-503c.docx official template
+    mapping-packs/          # Bundled mappings: HRP-503c (7 fields) + HRP-503 (33 fields)
+    templates/              # HRP-503c.docx + HRP-503.docx official templates
     views/                  # Blade templates (admin, auth, projects, components)
   ops/
     db/                     # User-space MariaDB start/stop/setup scripts

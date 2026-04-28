@@ -61,11 +61,10 @@ MariaDB (local user-space instance via ops/db/start.sh)
 
 ## Test Suite
 
-- 114 tests, 363 assertions
-- Unit tests: 10 service files (50 methods)
-- Feature tests: 8 files (17 methods)
-- Auth tests: 18 methods (Breeze-generated)
-- E2E: 2 Playwright files (basic tab navigation)
+- 142 tests, 451 assertions (PHPUnit, as of v0.3.0 — 2026-04-28)
+- Playwright E2E: 21 tests including 2 setup logins and 19 specs
+  (auth + tabs + workflows + admin forms + accessibility + project lifecycle)
+- Style: Laravel Pint (codebase formatted; `vendor/bin/pint --test` passes)
 
 ## Missing Tooling
 
@@ -73,3 +72,37 @@ MariaDB (local user-space instance via ops/db/start.sh)
 - No frontend linting (ESLint/Biome)
 - No frontend type checking (TypeScript)
 - No code coverage enforcement threshold
+
+## Portability Notes (Database)
+
+The application targets **MariaDB / MySQL** as its single supported RDBMS.
+A small number of admin observability queries use vendor-specific SQL
+that will not run on PostgreSQL or SQLite without rewrite:
+
+- `App\Http\Controllers\AdminController::index()` uses MySQL-specific
+  `TIMESTAMPDIFF(SECOND, started_at, completed_at)` to compute median run
+  duration in the analysis runs aggregate. Equivalent on PostgreSQL is
+  `EXTRACT(EPOCH FROM (completed_at - started_at))`; on SQLite,
+  `(julianday(completed_at) - julianday(started_at)) * 86400`.
+
+Accepted technical debt. The project documents MariaDB as a hard
+requirement (see `ops/db/start.sh`, `ops/db/setup-production.sh`), so
+porting is only relevant if the supported-database scope changes. If
+that happens, prefer extracting the duration arithmetic into a query
+scope on the `AnalysisRun` model so the dialect-specific snippet is
+isolated.
+
+## Build and Test Commands
+
+| Task | Command |
+|------|---------|
+| Run PHP test suite | `php artisan test` |
+| Run Playwright E2E (parallel) | `npx playwright test` |
+| Run Playwright E2E (serial, debug) | `npx playwright test --workers=1` |
+| Format with Pint | `vendor/bin/pint` (write) / `vendor/bin/pint --test` (check only) |
+| Build assets | `npm run build` |
+| Dev server (concurrent) | `composer run dev` |
+| Re-seed admin user | `php artisan db:seed --class=Database\\Seeders\\AdminUserSeeder` |
+| Re-seed HRP-503 fields | `php artisan db:seed --class=Database\\Seeders\\Hrp503FieldDefinitionSeeder` |
+| Composer audit | `composer audit` |
+| npm audit | `npm audit` |
