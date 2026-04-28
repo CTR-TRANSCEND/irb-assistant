@@ -17,7 +17,7 @@ class AdminProviderController extends Controller
             'id' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'max:255'],
             'provider_type' => ['required', 'string', 'in:openai,openai_compat,ollama,lmstudio,glm47'],
-            'base_url' => ['nullable', 'string', 'max:2048'],
+            'base_url' => ['nullable', 'url:http,https', 'max:2048'],
             'model' => ['nullable', 'string', 'max:255'],
             'api_key' => ['nullable', 'string', 'max:4096'],
             'request_params_json' => ['nullable', 'string'],
@@ -118,10 +118,18 @@ class AdminProviderController extends Controller
 
             return redirect()->route('admin.index', ['tab' => 'providers'])->with('status', 'Provider test succeeded.');
         } catch (\Throwable $e) {
+            $classification = $this->classifyLlmException($e);
+
+            \Illuminate\Support\Facades\Log::warning('LLM provider test failed', [
+                'provider_id' => $provider->id,
+                'classification' => $classification,
+                'message' => $e->getMessage(),
+            ]);
+
             $provider->forceFill([
                 'last_tested_at' => now(),
                 'last_test_ok' => false,
-                'last_test_error' => $e->getMessage(),
+                'last_test_error' => $classification,
             ])->save();
 
             $audit->log(
@@ -134,14 +142,60 @@ class AdminProviderController extends Controller
                 payload: [
                     'before' => $before,
                     'after' => $this->sanitizeProviderForAudit($provider->fresh()?->toArray()),
-                    'result' => 'failed',
+                    'result' => $classification,
                 ],
             );
 
             return redirect()
                 ->route('admin.index', ['tab' => 'providers'])
-                ->withErrors(['provider_test' => 'Provider test failed: '.$e->getMessage()]);
+                ->withErrors(['provider_test' => 'Provider test failed: '.$classification]);
         }
+    }
+
+    private function classifyLlmException(\Throwable $e): string
+    {
+        $msg = $e->getMessage();
+
+        // Timeout check first — overlaps with connect_failed cURL codes
+        if (str_contains($msg, 'timed out') || str_contains($msg, 'cURL error 28')) {
+            return 'timeout';
+        }
+
+        // TLS / SSL errors
+        if (
+            str_contains($msg, 'SSL') ||
+            str_contains($msg, 'TLS') ||
+            str_contains($msg, 'cURL error 35') ||
+            str_contains($msg, 'cURL error 60')
+        ) {
+            return 'tls_error';
+        }
+
+        // Connection failures
+        if (
+            $e instanceof \Illuminate\Http\Client\ConnectionException ||
+            str_contains($msg, 'cURL error 6') ||
+            str_contains($msg, 'cURL error 7') ||
+            str_contains($msg, 'Could not resolve') ||
+            str_contains($msg, 'Failed to connect')
+        ) {
+            return 'connect_failed';
+        }
+
+        // HTTP status-based classification from LlmChatService message format
+        if (str_contains($msg, 'LLM request failed: 4')) {
+            return 'http_4xx';
+        }
+
+        if (str_contains($msg, 'LLM request failed: 5')) {
+            return 'http_5xx';
+        }
+
+        if (str_contains($msg, 'LLM request failed:')) {
+            return 'unexpected_response';
+        }
+
+        return 'unexpected_response';
     }
 
     /**
