@@ -164,6 +164,102 @@ Laravel keeps a list of previous keys in `APP_PREVIOUS_KEYS`. When the current k
 - [x] Best-effort behavior: if scanner is unavailable or scan fails, document is marked `unscanned` / `scan_failed` and extraction still proceeds.
 - [x] PDF parsing hardening: `pdftotext` timeout, page limits, byte limits, smalot/pdfparser memory limit (`IRB_PDF_PARSER_MEMORY_MB`), fallback logging.
 
+### ClamAV setup guide
+
+ClamAV is the canonical open-source antivirus engine on Linux/BSD/macOS. It ships as two binaries:
+
+- `clamscan` — standalone CLI scanner. Loads the entire signature database into memory on each invocation (slow start, fast for one-off scans).
+- `clamdscan` — thin client that talks to a long-running `clamd` daemon which keeps the signature database in memory between scans (fast for production workloads).
+
+Both read the same signature database (~1 GB), refreshed automatically by `freshclam`.
+
+#### Why this app integrates ClamAV
+
+Researchers upload third-party study documents — investigator brochures, protocol drafts, IRB reviewer comments. Some of those files originate outside your institution (collaborators, sponsors, electronic submissions) and may carry document-borne malware: weaponized PDFs (e.g., CVE-2010-0188 era), malicious DOCX templates with embedded macros, or zipped attachments. The app scans every upload before extraction so an infected file never reaches the text-extraction stage that runs `pdftotext` / `unzip` against potentially-hostile content.
+
+#### Behavior matrix
+
+`App\Services\MalwareScanService` (see `app/Services/MalwareScanService.php`) handles four states:
+
+| Outcome | Trigger | Behavior |
+|---------|---------|----------|
+| `clean` | scanner present, exit code 0 | upload proceeds to extraction |
+| `infected` | scanner present, exit code 1, signature parsed | file quarantined, upload aborts, audit row written, user sees an error |
+| `unavailable` | neither `clamdscan` nor `clamscan` on PATH | upload proceeds with `scan_status = unscanned`, no error to the user |
+| `error` / `timed_out` | scanner crashed or exceeded timeout | upload proceeds with `scan_status = scan_failed`, recorded in audit log |
+
+Engine detection runs once per service instance (memoized as of 2026-04-27 Remedy B), so a multi-file upload spawns at most one `--version` probe regardless of how many files it carries. The 30-second per-file scan timeout (configurable via the constructor) prevents a hung daemon from stalling the upload form.
+
+#### What you should do
+
+##### Option A — Do nothing (acceptable for local dev)
+
+If you are the only user, on a personal workstation, with no untrusted document sources, the `unavailable` fallback is safe enough. Uploads continue to work; documents land in `scan_status = unscanned`. The audit log records each unscanned upload so you can identify them later if you change your mind.
+
+This is the right default for a single-user lab tool that only ever processes files you generated yourself.
+
+##### Option B — Install daemon-based scanning (recommended for shared use)
+
+If anyone other than you will upload to this instance — collaborators, students, sponsors — install the daemon. It adds ~600 ms per file but keeps untrusted content from being parsed by `pdftotext`.
+
+Ubuntu / Debian / WSL2:
+
+```bash
+sudo apt update
+sudo apt install -y clamav clamav-daemon clamav-freshclam
+
+# Pull the initial signature database (one-time, ~5 minutes, ~1 GB).
+# freshclam runs as a service after install but the first run takes a while.
+sudo systemctl stop clamav-freshclam
+sudo freshclam
+sudo systemctl start clamav-freshclam
+
+# Start the daemon
+sudo systemctl enable --now clamav-daemon
+
+# Verify
+clamdscan --version
+```
+
+The Laravel service auto-detects `clamdscan` on PATH and routes scans through the running daemon. No config change needed in this app.
+
+Verify the integration is live by uploading the EICAR test virus (the standard harmless test signature, downloadable from <https://www.eicar.org>). The app should reject it with `scan_status = infected` and quarantine the file under `storage/app/quarantine/`.
+
+##### Option C — CLI-only (simpler, slower)
+
+If you cannot run a daemon (e.g., container restrictions, limited memory), install just the CLI:
+
+```bash
+sudo apt install -y clamav clamav-freshclam
+sudo freshclam
+clamscan --version
+```
+
+Each upload now incurs ~3-8 seconds for the database load. Acceptable for low-volume use.
+
+##### Option D — Disable explicitly (current dev mode behavior)
+
+The `unavailable` fallback already covers the "no scanner installed" case. There is no separate flag to disable scanning — if neither binary is on PATH, scans simply do not run. If you want to be explicit in your environment documentation, note that omitting the install yields `scan_status = unscanned` for every upload.
+
+#### Day-to-day operations
+
+Once installed, the daemon takes care of itself:
+
+- `clamav-freshclam.service` updates signatures every few hours.
+- `clamav-daemon.service` keeps the database loaded.
+- Logs land in `/var/log/clamav/`.
+
+There is no scheduled administrative work for this app — the audit log surfaces any infected upload in real time, and `irb:retention-prune` cleans up the quarantined originals along with everything else after the retention window.
+
+#### Production deployment note
+
+For a production deployment behind Apache (`ops/apache/`), the daemon path is the only reasonable option:
+
+- `clamav-daemon` keeps memory pressure off the PHP-FPM workers.
+- `clamdscan --fdpass` (already used by the service) hands an open file descriptor to the daemon, which lets the daemon scan files even when AppArmor or selinux restricts cross-process file access.
+
+If your deployment uses a separate file-storage volume (NFS, S3-mount), make sure the daemon can read the same path the PHP-FPM user writes to. The simplest setup keeps both on local disk.
+
 ## Hardening / ops
 
 - [x] Sample Apache reverse proxy config + strict headers provided under `ops/apache/`.

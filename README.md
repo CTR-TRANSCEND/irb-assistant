@@ -216,7 +216,7 @@ Automated daily cleanup runs at 03:00 via Laravel's scheduler. Add this to your 
 ## Security
 
 - Uploaded files stored outside web root with optional XChaCha20-Poly1305 encryption
-- Malware scanning via ClamAV (best-effort, graceful fallback)
+- Malware scanning via ClamAV (best-effort, graceful fallback — see `503c-assistant/SECURITY_CHECKLIST.md` "ClamAV setup guide" for install / opt-out options)
 - Rate limiting on authentication routes (5 attempts per minute)
 - Public registration disabled by default
 - LLM request/response payloads stored as redacted JSON with encrypted full payload
