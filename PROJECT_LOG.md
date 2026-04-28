@@ -1320,3 +1320,38 @@ After tagging v0.3.0, the user surfaced four follow-up requests:
 - DB volume encryption — production environment (deferred)
 - Apache config verification — production server (deferred)
 - Manual NVDA/VoiceOver screen reader testing — nice-to-have
+
+---
+
+## Session 2026-04-28 CDT (post-screenshots) — sensitive-value scrub
+
+**Coding CLI used:** Claude Code CLI (claude-opus-4-7)
+
+**Type:** History rewrite to remove a private network address from a tracked screenshot and from this LOG.
+
+### What happened
+
+The 2026-04-28 README screenshot refresh (`bba88e9`) and the preceding LOG sync (`eaca537`) both contained a private Tailscale IP that should not appear in either repository. Reviewer caught it during post-merge inspection.
+
+### Remediation
+
+1. Updated the LM Studio provider's `base_url` to `http://lm-studio.local:1234/v1` in the database, re-captured `503c-assistant/screenshots/05-admin-panel.png`, then restored the actual `base_url` so the live smoke spec still works.
+2. Replaced the IP in this LOG with the placeholder `<TAILSCALE_IP_REDACTED>`.
+3. `git reset --soft HEAD~2` to undo the last two commits while keeping the working-tree changes; re-staged each commit's files separately and re-committed with the original messages so the redacted versions retain the same intent + structure. New commit SHAs: `9743f64` (replaces `eaca537`) and `284ad6a` (replaces `bba88e9`).
+4. `git push --force-with-lease` to both `windysky` (private) and `CTR-TRANSCEND` (public).
+5. `git reflog expire --expire=now --all` + `git gc --prune=now --aggressive` to drop the orphan blobs locally.
+
+### Residual exposure note
+
+GitHub keeps orphaned commits accessible via direct SHA URL for up to approximately 90 days. The Tailscale IP belongs to the CGNAT private range (100.64.0.0/10) and is unroutable from the public internet, so the residual exposure window does not enable a network attack. A maintainer who wants the orphans expired sooner can open a GitHub Support ticket against either repo citing the now-orphan SHAs.
+
+### Verification
+
+- `git grep` for the redacted value across HEAD: no matches
+- `git log --all + git grep`: no matches in any reachable blob
+- `git rev-parse <orphan-sha>`: errors with "unknown revision" (orphans pruned)
+- `git for-each-ref`: local main, `origin/main`, and `ctr-transcend/main` all point at `284ad6a`
+
+### Lesson for future sessions
+
+When capturing a screenshot of any admin or settings page, swap visible private addresses, API keys, and similar values to placeholders before the screenshot, even when only the value-domain (e.g. internal vs external) is sensitive. The cost of a temporary DB tweak is much lower than a force-push.
