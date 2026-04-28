@@ -1,77 +1,91 @@
 import { test, expect } from 'playwright/test';
 
 // ---------------------------------------------------------------------------
-// Test 1: Admin Provider Form - Validation Errors Display
+// Tests 1 & 1b depend on Laravel's session flash to surface validation errors
+// after a redirect-back. The default admin storageState
+// (.playwright/.auth/admin.json) is shared across every parallel worker, so a
+// concurrent GET on /admin from another spec consumes the flashed `errors`
+// bag before our redirect-back renders, causing an intermittent failure where
+// the `ul.text-red-600` element never appears within the 10s timeout.
+//
+// auth.setup.ts saves a second, isolated session at
+// .playwright/.auth/admin-forms.json. The describe block below points at it
+// so admin-forms.spec.ts owns its session — no other spec touches that DB
+// session row, so flash semantics are deterministic. The remaining 5 tests
+// in this file are GET-only and keep the shared admin storageState for speed.
 // ---------------------------------------------------------------------------
-test('admin provider form - validation errors display on empty submit', async ({ page }) => {
-  const resp = await page.goto('/admin?tab=providers');
-  expect(resp, 'expected a response for /admin?tab=providers').not.toBeNull();
-  expect(resp!.ok(), `expected ok response, got ${resp!.status()}`).toBeTruthy();
+test.describe('admin provider form - flash-dependent', () => {
+  test.use({ storageState: '.playwright/.auth/admin-forms.json' });
 
-  await page.waitForLoadState('networkidle');
+  test('validation errors display on empty submit', async ({ page }) => {
+    const resp = await page.goto('/admin?tab=providers');
+    expect(resp, 'expected a response for /admin?tab=providers').not.toBeNull();
+    expect(resp!.ok(), `expected ok response, got ${resp!.status()}`).toBeTruthy();
 
-  // The name field has HTML5 `required`, which blocks the form before reaching the server.
-  // Remove the required attribute via JS so we can test server-side validation errors.
-  await page.evaluate(() => {
-    const input = document.querySelector<HTMLInputElement>('#name');
-    if (input) {
-      input.removeAttribute('required');
-      input.value = '';
-    }
+    await page.waitForLoadState('networkidle');
+
+    // The name field has HTML5 `required`, which blocks the form before reaching the server.
+    // Remove the required attribute via JS so we can test server-side validation errors.
+    await page.evaluate(() => {
+      const input = document.querySelector<HTMLInputElement>('#name');
+      if (input) {
+        input.removeAttribute('required');
+        input.value = '';
+      }
+    });
+
+    // Submit the form with empty name — this now reaches the server
+    await page.getByRole('button', { name: /save provider/i }).click();
+
+    // Server returns redirect-back with validation errors
+    await page.waitForURL(/\/admin\?tab=providers/);
+    await page.waitForLoadState('networkidle');
+
+    // x-input-error renders: <ul class="text-sm text-red-600 space-y-1"><li>...</li></ul>
+    const nameError = page.locator('ul.text-red-600 li').first();
+    await expect(nameError, 'expected a validation error message to appear').toBeVisible({
+      timeout: 10000,
+    });
+
+    // The error text should mention the name field
+    const errorText = await nameError.textContent();
+    expect(errorText?.toLowerCase(), 'expected error text to reference "name" field').toMatch(
+      /name/i,
+    );
   });
 
-  // Submit the form with empty name — this now reaches the server
-  await page.getByRole('button', { name: /save provider/i }).click();
+  test('preserves entered values after validation failure', async ({ page }) => {
+    const resp = await page.goto('/admin?tab=providers');
+    expect(resp, 'expected a response for /admin?tab=providers').not.toBeNull();
+    expect(resp!.ok(), `expected ok response, got ${resp!.status()}`).toBeTruthy();
 
-  // Server returns redirect-back with validation errors
-  await page.waitForURL(/\/admin\?tab=providers/);
-  await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('networkidle');
 
-  // x-input-error renders: <ul class="text-sm text-red-600 space-y-1"><li>...</li></ul>
-  const nameError = page.locator('ul.text-red-600 li').first();
-  await expect(nameError, 'expected a validation error message to appear').toBeVisible({ timeout: 10000 });
+    // Fill base_url — not required, but preserved via old() on redirect-back
+    const baseUrlInput = page.locator('#base_url');
+    await expect(baseUrlInput).toBeVisible();
+    const testUrl = 'http://localhost:11434';
+    await baseUrlInput.fill(testUrl);
 
-  // The error text should mention the name field
-  const errorText = await nameError.textContent();
-  expect(errorText?.toLowerCase(), 'expected error text to reference "name" field').toMatch(
-    /name/i,
-  );
-});
+    // Remove required from name and leave it blank to trigger validation failure
+    await page.evaluate(() => {
+      const input = document.querySelector<HTMLInputElement>('#name');
+      if (input) {
+        input.removeAttribute('required');
+        input.value = '';
+      }
+    });
 
-// ---------------------------------------------------------------------------
-// Test 1b: Provider form preserves entered values after validation failure
-// ---------------------------------------------------------------------------
-test('admin provider form - preserves entered values after validation failure', async ({
-  page,
-}) => {
-  const resp = await page.goto('/admin?tab=providers');
-  expect(resp, 'expected a response for /admin?tab=providers').not.toBeNull();
-  expect(resp!.ok(), `expected ok response, got ${resp!.status()}`).toBeTruthy();
+    await page.getByRole('button', { name: /save provider/i }).click();
+    await page.waitForURL(/\/admin\?tab=providers/);
+    await page.waitForLoadState('networkidle');
 
-  await page.waitForLoadState('networkidle');
-
-  // Fill base_url — not required, but preserved via old() on redirect-back
-  const baseUrlInput = page.locator('#base_url');
-  await expect(baseUrlInput).toBeVisible();
-  const testUrl = 'http://localhost:11434';
-  await baseUrlInput.fill(testUrl);
-
-  // Remove required from name and leave it blank to trigger validation failure
-  await page.evaluate(() => {
-    const input = document.querySelector<HTMLInputElement>('#name');
-    if (input) {
-      input.removeAttribute('required');
-      input.value = '';
-    }
+    // After redirect-back, base_url should be preserved via old()
+    const preservedUrl = await page.locator('#base_url').inputValue();
+    expect(preservedUrl, 'expected base_url to be preserved after validation failure').toBe(
+      testUrl,
+    );
   });
-
-  await page.getByRole('button', { name: /save provider/i }).click();
-  await page.waitForURL(/\/admin\?tab=providers/);
-  await page.waitForLoadState('networkidle');
-
-  // After redirect-back, base_url should be preserved via old()
-  const preservedUrl = await page.locator('#base_url').inputValue();
-  expect(preservedUrl, 'expected base_url to be preserved after validation failure').toBe(testUrl);
 });
 
 // ---------------------------------------------------------------------------
