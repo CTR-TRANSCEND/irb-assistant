@@ -1015,3 +1015,130 @@ All 4 outstanding items still require external infrastructure not present in thi
 - Apache config verification (production server)
 - Manual NVDA/VoiceOver testing
 - E2E for LLM analysis workflow (configured LLM provider)
+
+---
+
+## Session 2026-04-27 CDT (continued — harness-hur-code-review-and-fix)
+
+**Coding CLI used:** Claude Code CLI (claude-opus-4-7)
+
+**Type:** Comprehensive review-and-fix workflow (Hur Harness, 5 phases)
+
+### Phase 0 — Deep Reconnaissance
+
+- Confirmed working tree clean, in sync with origin/main (windysky private)
+- Source-code TODO/FIXME/HACK count: 0
+- Skipped tests count: 0
+- Identified surfaces NOT yet verified today: Playwright E2E, npm audit, composer audit, Pint linter
+
+### Phase 1 — Baseline (parallel QA Agent + Security Auditor)
+
+**QA Agent (expert-testing) results:**
+- PHPUnit: 142/451 — clean (matches baseline)
+- Playwright E2E: 20/20 — clean (after php artisan db:seed; auth.setup needed seeded admin)
+- npm audit (prod): 0 vulnerabilities
+- npm audit (all): 3 moderate (postcss XSS, axios bump, follow-redirects bump — dev-only)
+- composer audit: **2 medium advisories** in league/commonmark (CVE-2026-33347, CVE-2026-30838)
+- Pint --test: 39 files with style violations (pre-existing style debt across codebase)
+
+**Security Auditor (expert-security) results:**
+- Secret-leak audit on 67 newly-tracked files (post-da6247b): **zero real secrets, zero PHI leaks**
+- Diff review of today's source commits: all clean. SQL injection N/A on AdminController metric (selectRaw uses literal status strings); confirmed_at invariant holds; throttle keyed per-user (not per-IP); provider URL validator known-permissive on private IPs (acknowledged in commit message)
+- 3 net-new findings, all pre-existing or low/medium:
+  - Missing security headers — RESOLVED at deployment layer (ops/apache/snippets/security-headers.conf already sets HSTS, X-CTO, X-Frame, Referrer-Policy, Permissions-Policy, CSP)
+  - URL validator accepts private-IP literals — single-tenant scope, accepted
+  - MalwareScanService cache singleton-fragility — defensive note only
+
+### Phase 2 — Fix Dispatch
+
+Workflow constraint: "fix only what is broken, no refactoring." Triaged:
+
+| Item | In scope? | Action |
+|---|---|---|
+| 2 league/commonmark CVEs | YES — defensive sec patch | `composer update league/commonmark --with-dependencies` |
+| 3 npm audit dev mods | YES — trivial fix | `npm audit fix` |
+| Pint 39-file style debt | NO — pre-existing, refactor scope | Deferred |
+| Missing security headers | NO — resolved at ops/apache/ | None |
+| URL validator private-IP | NO — acknowledged in commit, single-tenant scope | None |
+| MalwareScanService singleton | NO — defensive note, not bug | None |
+
+**Executed:**
+- `composer update league/commonmark --with-dependencies` → 0 advisories (was 2)
+- `npm audit fix` → 0 vulnerabilities (was 3 moderate)
+
+### Phase 3 — Quality Re-verify
+
+| Check | Pre-fix | Post-fix |
+|---|---|---|
+| PHPUnit | 142/451 | 142/451 ✓ no regression |
+| composer audit | 2 medium | 0 advisories ✓ |
+| npm audit | 3 moderate | 0 vulnerabilities ✓ |
+| npm run build (Vite) | n/a | succeeds (CSS 77.48 KB / JS 84.90 KB) |
+| Playwright (parallel) | 20/20 | 19/20 + 1 flake (admin-forms validation timeout, passed on targeted retry) |
+| Playwright (`--workers=1`) | n/a | 20/20 ✓ no flake |
+
+### Phase 4 — Smoke & Functional Verification
+
+Covered by Phase 3 Playwright run against live `php artisan serve --port=8585`. Each of today's commits exercised through real browser interaction:
+- Project creation/deletion lifecycle
+- Admin panel — all 6 tabs (users, providers, templates, settings, audit, observability)
+- Admin run detail page rendering
+- Profile management
+- Admin form validation (Remedy D's URL rule: form rejects empty submit, displays validation errors)
+- Throttle middleware (Remedy E): existing RouteThrottleTest exercises both endpoints
+- Accessibility (axe + ARIA + skip-link)
+- Auth flows
+
+### Phase 5 — Final commit + sync
+
+This entry. PROJECT_HANDOFF.md updated with:
+- Two new Completed rows (commonmark patch, npm audit fix)
+- Three new Verification rows (Playwright re-run, composer audit, npm audit)
+- Repository section updated to reflect split (CTR-TRANSCEND public frozen + windysky private active)
+
+### Concrete commits this session
+
+| SHA | Type | Summary |
+|---|---|---|
+| 0bc186d | chore | ignore .moai/evolution/telemetry jsonl files |
+| 997b5e7 | perf(scan) | memoize ClamAV engine detection (Remedy B) |
+| 4499c14 | fix(field) | null confirmed_at consistently (Remedy C) |
+| 2552e8f | fix(admin) | correct fieldCount and overallStats (Remedy A) |
+| 11bce82 | feat(admin) | validate base_url + redact test error (Remedy D) |
+| dcded68 | feat(security) | throttle:5,1 on analyze + documents.store (Remedy E) |
+| da6247b | chore(repo) | track project docs and MoAI definitions |
+| 5972849 | chore(deps) | patch league/commonmark CVEs + npm audit fix |
+
+### Items completed this Hur Harness session
+
+- Phase 0: Deep recon — completed
+- Phase 1: Baseline (parallel QA + Security agents) — completed
+- Phase 2: Fix dispatch (composer commonmark + npm audit fix) — completed
+- Phase 3: Quality re-verify — completed (no regressions)
+- Phase 4: Smoke + functional via Playwright — completed (20/20 with workers=1)
+- Phase 5: Doc sync + commit — this entry
+
+### Cumulative session statistics (post-da6247b through 5972849)
+
+- Commits: 8 (A-E remedies + gitignore + docs-tracked + dep patches)
+- Files changed: 79 (5 source + 5 test + 1 gitignore + 67 newly-tracked + 2 lockfiles — composer.lock, package-lock.json)
+- PHPUnit: 142 tests / 451 assertions (no change from start of session)
+- Playwright: 20/20 (verified against live dev server)
+- composer audit: 2 medium → 0 advisories
+- npm audit: 3 moderate → 0 vulnerabilities
+- PHP strict_types: 100% (unchanged)
+- Repository visibility: windysky private (was public), CTR-TRANSCEND public (re-synced from 6c547ef → dcded68)
+
+### Items deferred (per workflow "fix only" constraint)
+
+- 39-file Pint style debt (pre-existing across codebase; refactor scope)
+- MalwareScanService singleton future-proofing (defensive note, no current bug)
+- AdminProvider URL validator private-IP allowance (acknowledged in commit, single-tenant scope)
+- 1 occasionally-flaky Playwright test under parallel load (admin-forms validation timeout — passes on retry, not a code defect)
+
+### Outstanding (per Section 4 of PROJECT_HANDOFF.md, all external-infra-blocked)
+
+- DB volume encryption — production environment
+- Apache config verification — production server
+- Manual NVDA/VoiceOver screen reader testing
+- E2E for LLM analysis workflow — needs configured LLM provider

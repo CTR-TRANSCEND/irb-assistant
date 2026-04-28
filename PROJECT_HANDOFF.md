@@ -72,6 +72,8 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 | ProjectFieldController confirmed_at consistency | Completed | Session 2026-04-27 |
 | LLM provider base_url URL validation + last_test_error redaction | Completed | Session 2026-04-27 |
 | Throttle:5,1 on projects.analyze and projects.documents.store | Completed | Session 2026-04-27 |
+| league/commonmark CVE-2026-33347 + CVE-2026-30838 cleared (composer update) | Completed | Session 2026-04-27 |
+| npm audit fix — 3 dev moderate vulns (postcss/axios/follow-redirects) | Completed | Session 2026-04-27 |
 
 ### Partially Implemented
 
@@ -125,6 +127,9 @@ All items require external infrastructure or manual testing not automatable in C
 | Item | Method | Result | Verified |
 |------|--------|--------|----------|
 | Full test suite | `php artisan test` | 142 passed, 451 assertions, 0 failures, 0 warnings | 2026-04-27 CDT |
+| E2E (Playwright, fresh re-run) | `npx playwright test --workers=1` | 20 passed, 0 failures, 22.4s | 2026-04-27 CDT |
+| composer audit (prod + dev) | `composer audit` | 0 advisories (was 2 medium) | 2026-04-27 CDT |
+| npm audit | `npm audit` | 0 vulnerabilities (was 3 moderate) | 2026-04-27 CDT |
 | Frontend build | `npm run build` | 66.58 KB CSS, 83.55 KB JS, no errors | 2026-04-07 20:16 CDT |
 | E2E tests (Playwright) | `npx playwright test` | 20 tests passing (auth + tabs + workflows + admin forms + a11y + project lifecycle) | 2026-04-07 20:16 CDT |
 | Accessibility audit | axe-core via Playwright | 0 WCAG 2.1 AA violations on login, projects, admin | 2026-04-07 20:16 CDT |
@@ -152,10 +157,11 @@ Default login (seeded):
 - Re-seed: `cd 503c-assistant && php artisan db:seed --class=Database\\Seeders\\AdminUserSeeder`
 - Seed HRP-503 fields: `cd 503c-assistant && php artisan db:seed --class=Database\\Seeders\\Hrp503FieldDefinitionSeeder`
 
-Repository:
-- GitHub: `windysky/irb-assistant`
-- Latest commit: `dcded68` on `main` (v0.2.0 tag on `97fc079`)
-- A-E remedies (admin metrics, ClamAV memoize, confirmed_at, provider validation, route throttles) committed 2026-04-27
+Repository (split):
+- Public (grant snapshot): `CTR-TRANSCEND/irb-assistant` — frozen at `dcded68`
+- Private (active dev): `windysky/irb-assistant` — main = `5972849` (one ahead — `chore(deps)`)
+- v0.2.0 tag on `97fc079`, present on both remotes
+- A-E remedies committed 2026-04-27, plus dependency CVE patches and gitignore relaxation tracking project docs
 
 Recommended next actions (in priority order):
 1. Tag v0.3.0 when ready for release.
