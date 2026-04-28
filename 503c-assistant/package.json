@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "test": "echo 'No JS unit tests in this project. Use: php artisan test (PHPUnit) or npm run test:e2e (Playwright).' && exit 0",
         "test:e2e": "playwright test",
         "test:e2e:headed": "playwright test --headed",
         "test:e2e:ui": "playwright test --ui",
