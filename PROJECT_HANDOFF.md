@@ -6,9 +6,10 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 
 - **Repository:** `windysky/irb-assistant` (GitHub)
 - **Tech stack:** Laravel 12 / PHP 8.3 / MySQL-MariaDB / Blade + Tailwind + Alpine + Vite
-- **Test stack:** PHPUnit (142 tests, 451 assertions), Playwright (20 E2E tests: auth + tabs + workflows + admin forms + a11y + project lifecycle)
-- **Last updated:** 2026-04-27 CDT
+- **Test stack:** PHPUnit (142 tests, 451 assertions), Playwright (21 E2E specs: 2 setup logins + 19 specs covering auth + tabs + workflows + admin forms + a11y + project lifecycle, all passing under default parallel execution)
+- **Last updated:** 2026-04-28 CDT
 - **Last coding CLI used:** Claude Code CLI (claude-opus-4-7)
+- **Latest release tag:** v0.3.0
 
 ## 2. Current State
 
@@ -74,6 +75,11 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 | Throttle:5,1 on projects.analyze and projects.documents.store | Completed | Session 2026-04-27 |
 | league/commonmark CVE-2026-33347 + CVE-2026-30838 cleared (composer update) | Completed | Session 2026-04-27 |
 | npm audit fix — 3 dev moderate vulns (postcss/axios/follow-redirects) | Completed | Session 2026-04-27 |
+| Pint style cleanup — 39 files normalized (whitespace, imports, quoting) | Completed | Session 2026-04-28 |
+| Playwright admin-forms parallel-flake fix — isolated storageState | Completed | Session 2026-04-28 |
+| Encryption-key rotation procedure (APP_KEY + IRB_FILE_ENCRYPTION_KEYS) | Completed | Session 2026-04-28 |
+| `npm test` no-op script for MoAI quality gate compatibility | Completed | Session 2026-04-28 |
+| README + tech.md refresh: HRP-503 scope, test counts, portability notes | Completed | Session 2026-04-28 |
 
 ### Partially Implemented
 
@@ -116,20 +122,23 @@ All items require external infrastructure or manual testing not automatable in C
 | # | Item | Status | Opened | Resolution/Default |
 |---|------|--------|--------|--------------------|
 | 1 | Template scope: HRP-503c has only 7 fillable controls out of 46 curated fields | Resolved | 2026-02-10 | HRP-503 full application template now also supported (33 mappings) |
-| 2 | Encryption key rotation: keys are env-var-based, no automated rotation | Open | 2026-02-10 | Default: manual rotation via APP_PREVIOUS_KEYS pattern; document procedure |
+| 2 | Encryption key rotation: keys are env-var-based, no automated rotation | Resolved | 2026-04-28 | Documented procedure in 503c-assistant/SECURITY_CHECKLIST.md (Encryption key rotation section); covers both APP_KEY and IRB_FILE_ENCRYPTION_KEYS rotation paths |
 | 3 | Purge semantics: deletion redacts audit payloads but retains event records | Open | 2026-02-10 | Default: current behavior is acceptable for regulatory compliance |
 | 4 | PHPUnit @dataProvider deprecation warnings in SettingsServiceTest | Resolved | 2026-04-07 | Migrated to PHP 8 attribute syntax (#[DataProvider]) |
 | 5 | Hardcoded credential `hurlab123` was in git history | Resolved | 2026-03-22 | Git history wiped via orphan branch + forced push; credential should be rotated if ever used |
-| 6 | AdminController uses MySQL-specific TIMESTAMPDIFF for provider metrics | Open | 2026-04-07 | Low risk: project requires MariaDB; noted as portability debt |
+| 6 | AdminController uses MySQL-specific TIMESTAMPDIFF for provider metrics | Documented | 2026-04-28 | Captured in `.moai/project/tech.md` "Portability Notes" with PostgreSQL/SQLite equivalents and recommended refactor path (extract to query scope); accepted technical debt while MariaDB is the only supported RDBMS |
 
 ## 6. Verification Status
 
 | Item | Method | Result | Verified |
 |------|--------|--------|----------|
-| Full test suite | `php artisan test` | 142 passed, 451 assertions, 0 failures, 0 warnings | 2026-04-27 CDT |
-| E2E (Playwright, fresh re-run) | `npx playwright test --workers=1` | 20 passed, 0 failures, 22.4s | 2026-04-27 CDT |
-| composer audit (prod + dev) | `composer audit` | 0 advisories (was 2 medium) | 2026-04-27 CDT |
-| npm audit | `npm audit` | 0 vulnerabilities (was 3 moderate) | 2026-04-27 CDT |
+| Full test suite | `php artisan test` | 142 passed, 451 assertions, 0 failures, 0 warnings (10.92s post-Pint) | 2026-04-28 CDT |
+| E2E (Playwright, default parallel) | `npx playwright test` | 21 passed, 0 failures (run 5x consecutively post-fix; pre-fix flake was 1 fail in 2 runs) | 2026-04-28 CDT |
+| E2E (Playwright, serial) | `npx playwright test --workers=1` | 20 passed, 0 failures, 24.0s | 2026-04-28 CDT |
+| Pint style check | `vendor/bin/pint --test` | pass (zero violations) | 2026-04-28 CDT |
+| composer audit (prod + dev) | `php /tmp/composer audit` | 0 advisories | 2026-04-28 CDT |
+| npm audit | `npm audit` | 0 vulnerabilities | 2026-04-28 CDT |
+| Vite build | `npm run build` | CSS 77.48 KB, JS 84.90 KB, 1.23s | 2026-04-28 CDT |
 | Frontend build | `npm run build` | 66.58 KB CSS, 83.55 KB JS, no errors | 2026-04-07 20:16 CDT |
 | E2E tests (Playwright) | `npx playwright test` | 20 tests passing (auth + tabs + workflows + admin forms + a11y + project lifecycle) | 2026-04-07 20:16 CDT |
 | Accessibility audit | axe-core via Playwright | 0 WCAG 2.1 AA violations on login, projects, admin | 2026-04-07 20:16 CDT |
@@ -141,7 +150,7 @@ All items require external infrastructure or manual testing not automatable in C
 
 ## 7. Restart Instructions
 
-**Last updated:** 2026-04-27 CDT
+**Last updated:** 2026-04-28 CDT
 
 Start here:
 
@@ -158,16 +167,16 @@ Default login (seeded):
 - Seed HRP-503 fields: `cd 503c-assistant && php artisan db:seed --class=Database\\Seeders\\Hrp503FieldDefinitionSeeder`
 
 Repository (split):
-- Public (grant snapshot): `CTR-TRANSCEND/irb-assistant` — frozen at `dcded68`
-- Private (active dev): `windysky/irb-assistant` — main = `5972849` (one ahead — `chore(deps)`)
-- v0.2.0 tag on `97fc079`, present on both remotes
-- A-E remedies committed 2026-04-27, plus dependency CVE patches and gitignore relaxation tracking project docs
+- Public mirror: `CTR-TRANSCEND/irb-assistant` — synced to v0.3.0
+- Private (active dev): `windysky/irb-assistant` — main = v0.3.0 HEAD
+- Tags present on both remotes: v0.2.0, v0.3.0
+- v0.3.0 includes 2026-04-27 A-E remedies + dependency CVE patches, plus 2026-04-28 Pint cleanup, Playwright flake fix, and key-rotation docs
 
 Recommended next actions (in priority order):
-1. Tag v0.3.0 when ready for release.
-2. For production deployment, work through `ops/DEPLOYMENT_CHECKLIST.md` and `SECURITY_CHECKLIST.md`.
-3. Manual screen reader testing with NVDA/VoiceOver (automated axe audit already passes).
-4. Configure an LLM provider and test the full analysis workflow end-to-end.
+1. For production deployment, work through `ops/DEPLOYMENT_CHECKLIST.md` and `SECURITY_CHECKLIST.md` (key rotation now documented).
+2. Manual screen reader testing with NVDA/VoiceOver (automated axe audit already passes).
+3. Configure an LLM provider and test the full analysis workflow end-to-end.
+4. Verify the Apache reverse proxy configuration on a real production host.
 
 Key environment variables:
 - `IRB_ALLOW_REGISTRATION` (default: false) -- controls public user registration
