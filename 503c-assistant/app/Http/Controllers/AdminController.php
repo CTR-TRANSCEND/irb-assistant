@@ -84,12 +84,18 @@ class AdminController extends Controller
                 ->get()
                 ->keyBy('llm_provider_id');
 
-            // Overall totals
-            $allRuns = $data['analysisRuns'];
+            // Overall totals via real DB aggregate to avoid 200-row cap inaccuracy.
+            $overall = AnalysisRun::query()
+                ->selectRaw(
+                    "COUNT(*) as total,"
+                    . " SUM(CASE WHEN status = 'succeeded' THEN 1 ELSE 0 END) as succeeded,"
+                    . " SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed"
+                )
+                ->first();
             $data['overallStats'] = [
-                'total'     => $allRuns->count(),
-                'succeeded' => $allRuns->where('status', 'succeeded')->count(),
-                'failed'    => $allRuns->where('status', 'failed')->count(),
+                'total'     => (int) ($overall->total ?? 0),
+                'succeeded' => (int) ($overall->succeeded ?? 0),
+                'failed'    => (int) ($overall->failed ?? 0),
             ];
         }
 
@@ -113,9 +119,12 @@ class AdminController extends Controller
         }
 
         // Derive field count from response payload structure without exposing content.
+        // The redacted payload has shape: ['batch_count' => N, 'batches' => [['field_keys' => [...], ...], ...]].
+        // Summing field_keys across all batches gives the actual field count processed.
         $fieldCount = null;
-        if (is_array($run->response_payload)) {
-            $fieldCount = count($run->response_payload);
+        if (is_array($run->response_payload) && isset($run->response_payload['batches'])) {
+            $fieldCount = collect($run->response_payload['batches'] ?? [])
+                ->sum(fn ($b) => count($b['field_keys'] ?? []));
         }
 
         return view('admin.runs.show', [
