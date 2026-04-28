@@ -6,10 +6,10 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 
 - **Repository:** `windysky/irb-assistant` (GitHub)
 - **Tech stack:** Laravel 12 / PHP 8.3 / MySQL-MariaDB / Blade + Tailwind + Alpine + Vite
-- **Test stack:** PHPUnit (142 tests, 451 assertions), Playwright (21 E2E specs: 2 setup logins + 19 specs covering auth + tabs + workflows + admin forms + a11y + project lifecycle, all passing under default parallel execution)
+- **Test stack:** PHPUnit (142 tests, 451 assertions), Playwright (22 E2E specs total — 21 default + 1 opt-in live LM Studio smoke gated by IRB_RUN_LIVE_LLM=1)
 - **Last updated:** 2026-04-28 CDT
 - **Last coding CLI used:** Claude Code CLI (claude-opus-4-7)
-- **Latest release tag:** v0.3.0
+- **Latest release tag:** v0.3.0 (post-tag work continues on main; tag v0.3.1 if/when user asks)
 
 ## 2. Current State
 
@@ -80,6 +80,9 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 | Encryption-key rotation procedure (APP_KEY + IRB_FILE_ENCRYPTION_KEYS) | Completed | Session 2026-04-28 |
 | `npm test` no-op script for MoAI quality gate compatibility | Completed | Session 2026-04-28 |
 | README + tech.md refresh: HRP-503 scope, test counts, portability notes | Completed | Session 2026-04-28 |
+| LM Studio LLM provider configured + live round-trip verified (4.5s, gemma-4-e4b) | Completed | Session 2026-04-28 (post-v0.3.0) |
+| Live end-to-end Playwright smoke (upload → analyze → export → download) | Completed | Session 2026-04-28 (post-v0.3.0) |
+| ClamAV setup guide (4 install paths + behavior matrix + EICAR verify) | Completed | Session 2026-04-28 (post-v0.3.0) |
 
 ### Partially Implemented
 
@@ -110,12 +113,12 @@ Local-first Laravel 12 web app to help researchers draft HRP-503c and HRP-503 IR
 
 | # | Item | Status | Last Updated | Session Ref |
 |---|------|--------|-------------|-------------|
-| 1 | DB volume encryption for production | Not started | 2026-03-10 | Requires production environment; documented in DEPLOYMENT_CHECKLIST.md |
-| 2 | Apache config verification for production | Not started | 2026-03-10 | Config templates exist in ops/apache/; needs production testing |
+| 1 | DB volume encryption for production | Not started | 2026-03-10 | Requires production environment; documented in DEPLOYMENT_CHECKLIST.md. User has acknowledged this is post-deployment scope. |
+| 2 | Apache config verification for production | Not started | 2026-03-10 | Config templates exist in ops/apache/; needs production testing. User has acknowledged this is post-deployment scope. |
 | 3 | Manual screen reader testing (NVDA/VoiceOver) | Not started | 2026-04-07 | Axe-core automated audit passes; manual testing adds confidence |
-| 4 | E2E tests for LLM analysis workflow | Not started | 2026-04-07 | Requires configured LLM provider |
+| 4 | E2E test for LLM analysis workflow | Resolved | 2026-04-28 | 503c-assistant/tests/e2e/lm-studio-smoke.spec.ts exists; opt-in via IRB_RUN_LIVE_LLM=1; verified end-to-end against LM Studio gemma-4-e4b on Tailscale (1.6 min runtime) |
 
-All items require external infrastructure or manual testing not automatable in CI. Core application is feature-complete and production-ready for both HRP-503c and HRP-503 workflows.
+Items 1, 2 are deferred until the user migrates to a publicly-accessible server. Item 3 is a manual-testing nice-to-have. Item 4 is closed by the live LM Studio smoke spec added 2026-04-28. Core application is feature-complete and production-ready for both HRP-503c and HRP-503 workflows.
 
 ## 5. Risks, Open Questions, and Assumptions
 
@@ -139,6 +142,7 @@ All items require external infrastructure or manual testing not automatable in C
 | composer audit (prod + dev) | `php /tmp/composer audit` | 0 advisories | 2026-04-28 CDT |
 | npm audit | `npm audit` | 0 vulnerabilities | 2026-04-28 CDT |
 | Vite build | `npm run build` | CSS 77.48 KB, JS 84.90 KB, 1.23s | 2026-04-28 CDT |
+| Live LLM smoke (LM Studio gemma-4-e4b) | `IRB_RUN_LIVE_LLM=1 npx playwright test lm-studio-smoke.spec.ts --workers=1` | 1 passed, 1.6 min: upload + 2 chunks + run_status=succeeded with 6 suggestions + export ready + 85 KB DOCX with valid ZIP magic | 2026-04-28 CDT |
 | Frontend build | `npm run build` | 66.58 KB CSS, 83.55 KB JS, no errors | 2026-04-07 20:16 CDT |
 | E2E tests (Playwright) | `npx playwright test` | 20 tests passing (auth + tabs + workflows + admin forms + a11y + project lifecycle) | 2026-04-07 20:16 CDT |
 | Accessibility audit | axe-core via Playwright | 0 WCAG 2.1 AA violations on login, projects, admin | 2026-04-07 20:16 CDT |
