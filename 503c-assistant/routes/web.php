@@ -29,8 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project:uuid}/provider', [ProjectController::class, 'updateProvider'])->name('projects.provider.update');
     Route::delete('/projects/{project:uuid}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
-    Route::post('/projects/{project:uuid}/documents', [ProjectDocumentController::class, 'store'])->name('projects.documents.store');
-    Route::post('/projects/{project:uuid}/analyze', [ProjectAnalysisController::class, 'store'])->name('projects.analyze');
+    Route::post('/projects/{project:uuid}/documents', [ProjectDocumentController::class, 'store'])->middleware('throttle:5,1')->name('projects.documents.store');
+    Route::post('/projects/{project:uuid}/analyze', [ProjectAnalysisController::class, 'store'])->middleware('throttle:5,1')->name('projects.analyze');
     Route::post('/projects/{project:uuid}/fields/{value}', [ProjectFieldController::class, 'update'])->name('projects.fields.update');
     Route::post('/projects/{project:uuid}/export', [ExportController::class, 'store'])->name('projects.exports.store');
     Route::get('/exports/{export:uuid}', [ExportController::class, 'download'])->middleware('throttle:10,1')->name('exports.download');
