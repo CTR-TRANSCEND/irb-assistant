@@ -1,0 +1,658 @@
+<x-app-layout>
+    @section("title", "Admin")
+    <x-slot name="header">
+        <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Admin</p>
+                <h1 class="text-xl font-bold text-slate-900 dark:text-white">System Management</h1>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="card">
+                <!-- Tab Navigation -->
+                <div class="tab-nav overflow-x-auto" role="tablist" aria-label="Admin sections">
+                    @php
+                        $adminTabs = [
+                            'users' => ['label' => 'Users', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
+                            'providers' => ['label' => 'LLM Providers', 'icon' => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                            'templates' => ['label' => 'Templates', 'icon' => 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z'],
+                            'settings' => ['label' => 'Settings', 'icon' => 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'],
+                            'observability' => ['label' => 'Observability', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+                            'audit' => ['label' => 'Audit Log', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+                        ];
+                    @endphp
+                    @foreach($adminTabs as $tabKey => $tabInfo)
+                        <a
+                            id="admin-tab-{{ $tabKey }}"
+                            class="tab-link flex items-center gap-2 whitespace-nowrap {{ $tab === $tabKey ? 'tab-link-active' : 'tab-link-inactive' }}"
+                            href="{{ route('admin.index', ['tab' => $tabKey]) }}"
+                            role="tab"
+                            aria-selected="{{ $tab === $tabKey ? 'true' : 'false' }}"
+                            aria-controls="admin-tabpanel-{{ $tabKey }}"
+                        >
+                            <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $tabInfo['icon'] }}"/></svg>
+                            {{ $tabInfo['label'] }}
+                            @if($tabKey === 'users' && isset($pending_count) && $pending_count > 0)
+                                <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full" aria-label="{{ $pending_count }} pending">{{ $pending_count }}</span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+
+                <div
+                    id="admin-tabpanel-{{ $tab }}"
+                    class="p-6"
+                    role="tabpanel"
+                    aria-labelledby="admin-tab-{{ $tab }}"
+                >
+
+                    {{-- ============ USERS TAB ============ --}}
+                    @if($tab === 'users')
+                        @include('admin._users-tab', [
+                            'pendingUsers'  => $pendingUsers  ?? collect(),
+                            'allUsers'      => $allUsers      ?? collect(),
+                            'pending_count' => $pending_count ?? 0,
+                        ])
+
+                    {{-- ============ PROVIDERS TAB ============ --}}
+                    @elseif($tab === 'providers')
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Configured Providers</h3>
+                                <div class="space-y-3">
+                                    @forelse(($providers ?? collect()) as $p)
+                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4 dark:bg-slate-700 dark:ring-white/10">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $p->name }}</span>
+                                                        @if($p->is_default) <span class="badge badge-indigo">default</span> @endif
+                                                        @if($p->is_enabled)
+                                                            <span class="badge badge-green">enabled</span>
+                                                        @else
+                                                            <span class="badge badge-gray">disabled</span>
+                                                        @endif
+                                                        @if($p->is_external) <span class="badge badge-amber">external</span> @endif
+                                                    </div>
+                                                    <div class="flex items-center gap-2 mt-1 text-xs text-slate-600 dark:text-slate-400">
+                                                        <span class="badge badge-gray">{{ $p->provider_type }}</span>
+                                                        @if($p->model) <span>{{ $p->model }}</span> @endif
+                                                    </div>
+                                                    @if($p->base_url)
+                                                        <div class="text-xs text-slate-500 mt-1 truncate dark:text-slate-400">{{ $p->base_url }}</div>
+                                                    @endif
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    @if($p->last_tested_at)
+                                                        <div class="text-right">
+                                                            @if($p->last_test_ok === true)
+                                                                <span class="badge badge-green">Passed</span>
+                                                            @elseif($p->last_test_ok === false)
+                                                                <span class="badge badge-red">Failed</span>
+                                                            @endif
+                                                            <div class="text-xs text-slate-400 mt-0.5 dark:text-slate-500">{{ $p->last_tested_at->diffForHumans() }}</div>
+                                                        </div>
+                                                    @endif
+                                                    <form method="POST" action="{{ route('admin.providers.test', ['provider' => $p->id]) }}">
+                                                        @csrf
+                                                        <x-secondary-button type="submit" class="text-xs">Test</x-secondary-button>
+                                                    </form>
+                                                    {{-- Issue D: Edit + Delete buttons. Edit opens the form below in edit mode; Delete confirms client-side. --}}
+                                                    <a href="{{ route('admin.index', ['tab' => 'providers', 'edit' => $p->id]) }}#provider-form" class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600">Edit</a>
+                                                    {{-- Batch B B7: $p->name was interpolated into a JS string with
+                                                         only Blade HTML escaping — apostrophes in a provider name would
+                                                         break the JS literal. Js::from produces a safely-encoded JS value. --}}
+                                                    <form method="POST" action="{{ route('admin.providers.destroy', ['provider' => $p->id]) }}" onsubmit="return confirm('Delete provider ' + {{ Js::from($p->name) }} + '? This cannot be undone.');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg border border-red-300 bg-white text-red-700 hover:bg-red-50 dark:bg-slate-700 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            @if($p->last_test_ok === false && $p->last_test_error)
+                                                <div class="alert alert-error mt-3 text-xs">{{ $p->last_test_error }}</div>
+                                            @endif
+                                        </div>
+                                    @empty
+                                        <div class="empty-state py-12 rounded-xl bg-slate-50 ring-1 ring-slate-900/5">
+                                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                            <p class="empty-state-title">No providers configured</p>
+                                            <p class="empty-state-text">Add an LLM provider to enable AI analysis.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div>
+                                <div id="provider-form" class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10">
+                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 dark:bg-slate-700 dark:border-slate-600">
+                                        @if(isset($editingProvider) && $editingProvider)
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Editing: {{ $editingProvider->name }}</h4>
+                                                    <p class="text-xs text-slate-600 mt-0.5 dark:text-slate-400">Update fields and save. Leave API key blank to keep the current key.</p>
+                                                </div>
+                                                <a href="{{ route('admin.index', ['tab' => 'providers']) }}" class="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">Cancel</a>
+                                            </div>
+                                        @else
+                                            <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Add / Update Provider</h4>
+                                            <p class="text-xs text-slate-600 mt-0.5 dark:text-slate-400">OpenAI-compatible, Ollama, LM Studio, or GLM 4.7</p>
+                                        @endif
+                                    </div>
+                                    {{-- @MX:ANCHOR: Discover Models UI for SPEC-LLM-001 (REQ-LLM-015/016/017/020). @MX:REASON: high fan_in admin form, gates SSRF-validated provider creation; manual-override <details> renders open server-side and Alpine closes it on init for no-JS fallback (REQ-LLM-015 + S23). --}}
+                                    {{-- Issue C: autocomplete="off" on form + decoy username + per-field hardening prevents browser password managers from autofilling email/password into Base URL / API Key. --}}
+                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.providers.store') }}"
+                                          autocomplete="off"
+                                          x-data="{
+                                              loading: false,
+                                              discovering: false,
+                                              models: [],
+                                              loadedModels: [],
+                                              serverType: '',
+                                              error: '',
+                                              providerType: '{{ old('provider_type', $editingProvider->provider_type ?? 'openai') }}',
+                                              baseUrl: @js(old('base_url', $editingProvider->base_url ?? '')),
+                                              apiKey: '',
+                                              manualOpen: {{ ($editingProvider->model_manual ?? '') !== '' ? 'true' : 'true' }},
+                                              async discover() {
+                                                  if (this.discovering) return;
+                                                  this.discovering = true;
+                                                  this.error = '';
+                                                  try {
+                                                      const res = await fetch('{{ url('/admin/providers/discover') }}', {
+                                                          method: 'POST',
+                                                          headers: {
+                                                              'Content-Type': 'application/json',
+                                                              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                              'Accept': 'application/json',
+                                                          },
+                                                          credentials: 'same-origin',
+                                                          body: JSON.stringify({
+                                                              provider_type: this.providerType,
+                                                              base_url: this.baseUrl,
+                                                              api_key: this.apiKey,
+                                                          }),
+                                                      });
+                                                      let data = {};
+                                                      try { data = await res.json(); } catch (_) { data = { success: false, error: 'Invalid response from server' }; }
+                                                      if (res.ok && data.success) {
+                                                          this.models = Array.isArray(data.models) ? data.models : [];
+                                                          this.loadedModels = Array.isArray(data.loaded) ? data.loaded : [];
+                                                          this.serverType = data.server_type || '';
+                                                      } else {
+                                                          this.error = data.error || ('Discovery failed (HTTP ' + res.status + ')');
+                                                          this.models = [];
+                                                          this.loadedModels = [];
+                                                      }
+                                                  } catch (e) {
+                                                      this.error = 'Network error: ' + (e && e.message ? e.message : e);
+                                                      this.models = [];
+                                                      this.loadedModels = [];
+                                                  } finally {
+                                                      this.discovering = false;
+                                                  }
+                                              }
+                                          }"
+                                          x-init="$nextTick(() => { manualOpen = false; })"
+                                          @submit="loading = true">
+                                        @csrf
+                                        {{-- Issue D: hidden id triggers store() update path when in edit mode. --}}
+                                        @if(isset($editingProvider) && $editingProvider)
+                                            <input type="hidden" name="id" value="{{ $editingProvider->id }}" />
+                                        @endif
+                                        {{-- Issue C: hidden decoy fields absorb browser password-manager autofill before it reaches base_url/api_key. --}}
+                                        <input type="text" name="fake_username_decoy" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;opacity:0;" />
+                                        <input type="password" name="fake_password_decoy" autocomplete="current-password" tabindex="-1" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;opacity:0;" />
+                                        <div>
+                                            <x-input-label for="name" value="Name" />
+                                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="My Provider" :value="old('name', $editingProvider->name ?? '')" required autocomplete="off" />
+                                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="provider_type" value="Type" />
+                                            <select id="provider_type" name="provider_type" x-model="providerType" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                                @php $currentType = old('provider_type', $editingProvider->provider_type ?? 'openai'); @endphp
+                                                <option value="openai" @selected($currentType === 'openai')>OpenAI</option>
+                                                <option value="openai_compat" @selected($currentType === 'openai_compat')>OpenAI Compatible</option>
+                                                <option value="ollama" @selected($currentType === 'ollama')>Ollama</option>
+                                                <option value="lmstudio" @selected($currentType === 'lmstudio')>LM Studio</option>
+                                                <option value="glm47" @selected($currentType === 'glm47')>GLM 4.7</option>
+                                            </select>
+                                            <x-input-error :messages="$errors->get('provider_type')" class="mt-2" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="base_url" value="Base URL" />
+                                            <x-text-input id="base_url" name="base_url" type="url" class="mt-1 block w-full" placeholder="https://api.openai.com/v1" :value="old('base_url', $editingProvider->base_url ?? '')" x-model="baseUrl" autocomplete="off" inputmode="url" />
+                                            <x-input-error :messages="$errors->get('base_url')" class="mt-2" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="api_key" value="API Key" />
+                                            <x-text-input id="api_key" name="api_key" type="password" class="mt-1 block w-full" x-model="apiKey" autocomplete="new-password" placeholder="{{ isset($editingProvider) && $editingProvider ? 'Leave blank to keep current key' : '' }}" />
+                                            <x-input-error :messages="$errors->get('api_key')" class="mt-2" />
+                                            @if(isset($editingProvider) && $editingProvider)
+                                                <p class="text-xs text-slate-500 mt-1 dark:text-slate-400">Leave blank to keep the existing API key. Enter a new value to replace it.</p>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <x-input-label for="model" value="Model" />
+                                            <div class="mt-1 flex gap-2">
+                                                <select id="model" name="model" autocomplete="off"
+                                                        class="block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                                        :disabled="discovering">
+                                                    @php $currentModel = old('model', $editingProvider->model ?? ''); @endphp
+                                                    <option value="">— select a discovered model —</option>
+                                                    @if($currentModel !== '')
+                                                        <option value="{{ $currentModel }}" selected>{{ $currentModel }} (current)</option>
+                                                    @endif
+                                                    <template x-for="m in models" :key="m">
+                                                        <option :value="m"
+                                                                :aria-label="loadedModels.includes(m) ? m + ' (loaded)' : m"
+                                                                x-text="loadedModels.includes(m) ? m + ' ● loaded' : m"></option>
+                                                    </template>
+                                                </select>
+                                                <button type="button"
+                                                        @click="discover()"
+                                                        :disabled="discovering"
+                                                        class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600"
+                                                        x-text="discovering ? 'Discovering...' : 'Discover models'">
+                                                    Discover models
+                                                </button>
+                                            </div>
+                                            <x-input-error :messages="$errors->get('model')" class="mt-2" />
+                                            <p x-show="error" x-cloak class="text-xs text-red-600 mt-2 dark:text-red-400" x-text="error"></p>
+                                            <p x-show="!error && models.length > 0" x-cloak class="text-xs text-slate-500 mt-2 dark:text-slate-400">
+                                                <span x-text="models.length"></span> model(s) discovered<span x-show="serverType"> from <span x-text="serverType"></span></span>.
+                                            </p>
+
+                                            <details class="mt-3" :open="manualOpen" open>
+                                                <summary class="text-xs text-slate-600 cursor-pointer dark:text-slate-400">Use a model name not in the list (manual override)</summary>
+                                                <div class="mt-2">
+                                                    <input type="text" id="model_manual" name="model_manual" maxlength="255"
+                                                           value="{{ old('model_manual', $editingProvider->model_manual ?? '') }}"
+                                                           autocomplete="off"
+                                                           class="block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                                                           placeholder="e.g., custom-model-name" />
+                                                    <p class="text-xs text-slate-500 mt-1 dark:text-slate-400">Either select a discovered model above OR enter one here.</p>
+                                                    <x-input-error :messages="$errors->get('model_manual')" class="mt-2" />
+                                                </div>
+                                            </details>
+                                        </div>
+                                        <div>
+                                            <x-input-label for="request_params_json" value="Request Params (JSON)" />
+                                            @php
+                                                $defaultParamsJson = old('request_params_json',
+                                                    isset($editingProvider) && $editingProvider && $editingProvider->request_params
+                                                        ? json_encode($editingProvider->request_params, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+                                                        : ''
+                                                );
+                                            @endphp
+                                            <textarea id="request_params_json" name="request_params_json" autocomplete="off" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 placeholder:text-slate-400 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400" rows="3" placeholder='{"temperature": 0.2}'>{{ $defaultParamsJson }}</textarea>
+                                            <x-input-error :messages="$errors->get('request_params_json')" class="mt-2" />
+                                        </div>
+                                        <div class="flex flex-wrap gap-4 text-sm">
+                                            @php
+                                                $editEnabled = isset($editingProvider) && $editingProvider ? (bool) $editingProvider->is_enabled : false;
+                                                $editDefault = isset($editingProvider) && $editingProvider ? (bool) $editingProvider->is_default : false;
+                                                $editExternal = isset($editingProvider) && $editingProvider ? (bool) $editingProvider->is_external : true;
+                                            @endphp
+                                            <input type="hidden" name="is_enabled" value="0" />
+                                            <input type="hidden" name="is_default" value="0" />
+                                            <input type="hidden" name="is_external" value="0" />
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_enabled" value="1" @checked(old('is_enabled', $editEnabled)) class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> Enabled</label>
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_default" value="1" @checked(old('is_default', $editDefault)) class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> Default</label>
+                                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="is_external" value="1" @checked(old('is_external', $editExternal)) class="rounded border-slate-300 text-indigo-600 focus:ring-brand-500" /> External</label>
+                                        </div>
+                                        <x-primary-button class="w-full justify-center" :disabled="false" x-bind:disabled="loading">
+                                            <span x-show="!loading">{{ isset($editingProvider) && $editingProvider ? 'Update Provider' : 'Save Provider' }}</span>
+                                            <span x-show="loading" class="inline-flex items-center">
+                                                <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                            </span>
+                                        </x-primary-button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    {{-- ============ TEMPLATES TAB ============ --}}
+                    @elseif($tab === 'templates')
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2">
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Template Versions</h3>
+                                <div class="space-y-3">
+                                    @forelse(($templates ?? collect()) as $t)
+                                        @php
+                                            $controls = (int) (($templateStats['controls'][$t->id] ?? 0));
+                                            $mapped = (int) (($templateStats['mapped'][$t->id] ?? 0));
+                                            $mapPct = $controls > 0 ? round(($mapped / $controls) * 100) : 0;
+                                        @endphp
+                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $t->name }}</span>
+                                                        @if($t->is_active) <span class="badge badge-green">active</span> @endif
+                                                    </div>
+                                                    <div class="flex items-center gap-3 mt-2 text-xs text-slate-600 dark:text-slate-400">
+                                                        <span>{{ $controls }} controls</span>
+                                                        <span>{{ $mapped }} mapped ({{ $mapPct }}%)</span>
+                                                        <span>{{ $t->created_at->diffForHumans() }}</span>
+                                                    </div>
+                                                    <div class="mt-2 progress-bar">
+                                                        <div class="progress-bar-fill" style="width: {{ $mapPct }}%"></div>
+                                                    </div>
+                                                    <div class="text-xs text-slate-400 mt-2 font-mono dark:text-slate-500">{{ \Illuminate\Support\Str::limit($t->sha256, 20, '...') }}</div>
+                                                </div>
+                                                <a class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors" href="{{ route('admin.templates.show', ['template' => $t->uuid]) }}">
+                                                    Manage &rarr;
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="empty-state py-12 rounded-xl bg-slate-50 ring-1 ring-slate-900/5">
+                                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/></svg>
+                                            <p class="empty-state-title">No templates uploaded</p>
+                                            <p class="empty-state-text">Upload an HRP-503c DOCX template to get started.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10">
+                                    <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 dark:bg-slate-700 dark:border-slate-600">
+                                        <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Upload Template</h4>
+                                        <p class="text-xs text-slate-600 mt-0.5 dark:text-slate-400">Upload an HRP-503c .docx for content control scanning.</p>
+                                    </div>
+                                    <form class="p-5 space-y-4" method="POST" action="{{ route('admin.templates.store') }}" enctype="multipart/form-data" x-data="{ loading: false }" @submit="loading = true">
+                                        @csrf
+                                        <div>
+                                            <x-input-label for="name" value="Template name" />
+                                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" value="HRP-503c" />
+                                        </div>
+                                        <div>
+                                            <x-input-label for="template" value=".docx file" />
+                                            <input id="template" type="file" name="template" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required />
+                                            <x-input-error :messages="$errors->get('template')" class="mt-2" />
+                                        </div>
+                                        <x-primary-button class="w-full justify-center" x-bind:disabled="loading">
+                                            <span x-show="!loading">Upload</span>
+                                            <span x-show="loading" class="inline-flex items-center">
+                                                <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Uploading...
+                                            </span>
+                                        </x-primary-button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    {{-- ============ SETTINGS TAB ============ --}}
+                    @elseif($tab === 'settings')
+                        @php
+                            $s = $settings ?? [
+                                'allow_external_llm' => false,
+                                'retention_days' => 14,
+                                'max_upload_bytes' => 104857600,
+                                'logging_level' => 'debug',
+                            ];
+                        @endphp
+
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">System Settings</h3>
+                        <p class="text-sm text-slate-600 mt-1 dark:text-slate-400">Instance-wide configuration for all users.</p>
+
+                        <form class="mt-6 space-y-6" method="POST" action="{{ route('admin.settings.store') }}" x-data="{ loading: false }" @submit="loading = true">
+                            @csrf
+
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
+                                <div class="flex items-start gap-3">
+                                    <input id="allow_external_llm" type="checkbox" name="allow_external_llm" value="1" class="mt-1 rounded border-slate-300 text-indigo-600 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700" @checked($s['allow_external_llm']) />
+                                    <div>
+                                        <label for="allow_external_llm" class="text-sm font-medium text-slate-900 cursor-pointer dark:text-slate-100">Allow external LLM providers</label>
+                                        <p class="text-sm text-slate-600 mt-0.5 dark:text-slate-400">When enabled, providers marked as "external" can receive document text for analysis.</p>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning mt-3 text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                        External providers may receive sensitive research content. Enable only if your organization permits it.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
+                                    <x-input-label for="retention_days" value="Retention (days)" />
+                                    <x-text-input id="retention_days" name="retention_days" type="number" min="1" max="3650" class="mt-2 block w-full" :value="$s['retention_days']" required />
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Auto-delete uploads and exports after this many days.</p>
+                                </div>
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
+                                    <x-input-label for="max_upload_bytes" value="Max upload size (bytes)" />
+                                    <x-text-input id="max_upload_bytes" name="max_upload_bytes" type="number" min="1048576" max="1073741824" class="mt-2 block w-full" :value="$s['max_upload_bytes']" required />
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Default: 104,857,600 (100 MB)</p>
+                                </div>
+                                <div class="rounded-xl ring-1 ring-slate-900/5 p-5 dark:ring-white/10">
+                                    <x-input-label for="logging_level" value="Logging level" />
+                                    <select id="logging_level" name="logging_level" class="mt-2 block w-full rounded-lg border-slate-300 text-sm focus:ring-brand-500 focus:border-brand-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200">
+                                        @foreach(['debug','info','notice','warning','error','critical','alert','emergency'] as $lvl)
+                                            <option value="{{ $lvl }}" @selected($s['logging_level'] === $lvl)>{{ ucfirst($lvl) }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-xs text-slate-600 mt-2 dark:text-slate-400">Controls verbosity of application logs.</p>
+                                </div>
+                            </div>
+
+                            <x-primary-button x-bind:disabled="loading">
+                                <span x-show="!loading" class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Save Settings
+                                </span>
+                                <span x-show="loading" class="inline-flex items-center">
+                                    <span class="spinner spinner-sm mr-2" aria-hidden="true"></span> Saving...
+                                </span>
+                            </x-primary-button>
+                        </form>
+
+                    {{-- ============ AUDIT TAB ============ --}}
+                    @elseif($tab === 'audit')
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-semibold text-slate-900">System Audit Log</h3>
+                            <span class="badge badge-gray">{{ method_exists($auditEvents ?? collect(), 'total') ? $auditEvents->total() : ($auditEvents ?? collect())->count() }} events</span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10">
+                            <table class="min-w-full text-sm" aria-label="System audit log">
+                                <caption class="sr-only">System audit log showing event type, time, actor, entity, and details</caption>
+                                <thead class="bg-slate-50 dark:bg-slate-700">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Event</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">When</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Actor</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Entity</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider dark:text-slate-300">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                                    @forelse(($auditEvents ?? collect()) as $ev)
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/50">
+                                            <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{{ $ev->event_type }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs whitespace-nowrap dark:text-slate-400">{{ $ev->occurred_at?->diffForHumans() ?? $ev->created_at->diffForHumans() }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs dark:text-slate-400">{{ $ev->actor_user_id ? '#'.$ev->actor_user_id : '-' }}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs dark:text-slate-400">
+                                                @if($ev->entity_type)
+                                                    {{ $ev->entity_type }}@if($ev->entity_id) #{{ $ev->entity_id }}@endif
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @if($ev->payload)
+                                                    <details class="group">
+                                                        <summary class="text-xs text-indigo-600 cursor-pointer hover:text-indigo-800 flex items-center gap-1">
+                                                            <svg class="w-3 h-3 transform group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                                            View
+                                                        </summary>
+                                                        <pre class="mt-2 text-xs bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto max-w-md">{{ json_encode($ev->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+                                                    </details>
+                                                @else
+                                                    <span class="text-xs text-slate-400">-</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="empty-state py-12">
+                                                    <p class="empty-state-title">No audit events</p>
+                                                    <p class="empty-state-text">System activity will appear here.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if(method_exists($auditEvents ?? collect(), 'links'))
+                            <div class="mt-4">
+                                {{ $auditEvents->appends(['tab' => 'audit'])->links() }}
+                            </div>
+                        @endif
+
+                    {{-- ============ OBSERVABILITY TAB ============ --}}
+                    @elseif($tab === 'observability')
+                        @php
+                            $overall = $overallStats ?? ['total' => 0, 'succeeded' => 0, 'failed' => 0];
+                        @endphp
+
+                        {{-- Overall summary stat cards --}}
+                        <div class="grid grid-cols-3 gap-4 mb-8" role="region" aria-label="Overall run statistics">
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Total Runs</p>
+                                <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{{ $overall['total'] }}</p>
+                            </div>
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Succeeded</p>
+                                <p class="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">{{ $overall['succeeded'] }}</p>
+                            </div>
+                            <div class="rounded-xl ring-1 ring-slate-900/5 p-5 text-center dark:ring-white/10">
+                                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">Failed</p>
+                                <p class="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">{{ $overall['failed'] }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {{-- Analysis Runs list --}}
+                            <div class="lg:col-span-2">
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Recent Analysis Runs</h3>
+                                <div class="space-y-3" role="list" aria-label="Recent analysis runs">
+                                    @forelse(($analysisRuns ?? collect()) as $run)
+                                        <div class="rounded-xl bg-slate-50 ring-1 ring-slate-900/5 p-4 dark:bg-slate-700 dark:ring-white/10" role="listitem">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <span class="font-medium text-slate-900 text-sm font-mono dark:text-slate-100">{{ substr($run->uuid, 0, 8) }}</span>
+                                                        <span @class([
+                                                            'badge text-xs',
+                                                            'badge-green'  => $run->status === 'succeeded',
+                                                            'badge-red'    => $run->status === 'failed',
+                                                            'badge-blue'   => $run->status === 'running',
+                                                            'badge-amber'  => $run->status === 'queued',
+                                                            'badge-gray'   => !in_array($run->status, ['succeeded', 'failed', 'running', 'queued']),
+                                                        ]) aria-label="Status: {{ $run->status }}">{{ $run->status }}</span>
+                                                    </div>
+                                                    <div class="mt-1 text-xs text-slate-600 truncate dark:text-slate-400">
+                                                        @if($run->project?->name)
+                                                            <span class="font-medium">{{ $run->project->name }}</span> &middot;
+                                                        @endif
+                                                        {{ $run->provider?->name ?? 'No provider' }}
+                                                        @if($run->provider?->model) ({{ $run->provider->model }}) @endif
+                                                        &middot; prompt v{{ $run->prompt_version }}
+                                                    </div>
+                                                    @if($run->error)
+                                                        <div class="alert alert-error mt-2 text-xs">{{ Str::limit($run->error, 120) }}</div>
+                                                    @endif
+                                                </div>
+                                                <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                    <div class="text-xs text-slate-400 whitespace-nowrap">{{ $run->created_at?->diffForHumans() ?? '' }}</div>
+                                                    <a
+                                                        href="{{ route('admin.runs.show', ['runUuid' => $run->uuid]) }}"
+                                                        class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                                                        aria-label="View detail for run {{ substr($run->uuid, 0, 8) }}"
+                                                    >Detail &rarr;</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="empty-state py-12 rounded-xl bg-slate-50 ring-1 ring-slate-900/5">
+                                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                            <p class="empty-state-title">No analysis runs yet</p>
+                                            <p class="empty-state-text">Runs will appear here after users analyze projects.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            {{-- Provider Usage Metrics --}}
+                            <div>
+                                <h3 class="text-base font-semibold text-slate-900 mb-4 dark:text-slate-100">Provider Usage</h3>
+                                @php
+                                    $providersById   = ($providers ?? collect())->keyBy('id');
+                                    $provMetrics     = $providerMetrics ?? collect();
+                                @endphp
+                                @if($provMetrics->isEmpty())
+                                    <div class="rounded-xl ring-1 ring-slate-900/5 p-8 text-center text-sm text-slate-600">No usage data yet.</div>
+                                @else
+                                    <div class="rounded-xl ring-1 ring-slate-900/5 overflow-hidden dark:ring-white/10" role="table" aria-label="Provider usage metrics">
+                                        <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 grid grid-cols-5 gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300" role="row">
+                                            <div class="col-span-2" role="columnheader">Provider</div>
+                                            <div class="text-right" role="columnheader">Runs</div>
+                                            <div class="text-right" role="columnheader">Success</div>
+                                            <div class="text-right" role="columnheader">Avg (s)</div>
+                                        </div>
+                                        @foreach($provMetrics as $metric)
+                                            @php
+                                                $prov        = $providersById->get((int) $metric->llm_provider_id);
+                                                $successRate = $metric->total > 0
+                                                    ? round(($metric->succeeded / $metric->total) * 100)
+                                                    : 0;
+                                                $avgDur      = $metric->avg_duration_s !== null
+                                                    ? round((float) $metric->avg_duration_s)
+                                                    : null;
+                                            @endphp
+                                            <div class="px-4 py-3 border-b border-slate-100 last:border-b-0 grid grid-cols-5 gap-2 items-center text-sm dark:border-slate-700" role="row">
+                                                <div class="col-span-2" role="cell">
+                                                    <div class="font-medium text-slate-900 truncate dark:text-slate-100">{{ $prov?->name ?? 'Unknown' }}</div>
+                                                    @if($prov?->model)
+                                                        <div class="text-xs text-slate-500 truncate dark:text-slate-400">{{ $prov->model }}</div>
+                                                    @endif
+                                                    @if($metric->last_used_at)
+                                                        <div class="text-xs text-slate-400 dark:text-slate-500">{{ \Carbon\Carbon::parse($metric->last_used_at)->diffForHumans() }}</div>
+                                                    @endif
+                                                </div>
+                                                <div class="text-right font-bold text-slate-900 dark:text-slate-100" role="cell">{{ (int) $metric->total }}</div>
+                                                <div class="text-right" role="cell">
+                                                    <span @class([
+                                                        'badge text-xs',
+                                                        'badge-green' => $successRate >= 80,
+                                                        'badge-amber' => $successRate >= 50 && $successRate < 80,
+                                                        'badge-red'   => $successRate < 50,
+                                                    ]) aria-label="{{ $successRate }}% success rate">{{ $successRate }}%</span>
+                                                </div>
+                                                <div class="text-right text-slate-700 text-xs dark:text-slate-300" role="cell">
+                                                    {{ $avgDur !== null ? $avgDur.'s' : '—' }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

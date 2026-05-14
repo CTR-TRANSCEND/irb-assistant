@@ -1,79 +1,105 @@
-# IRB-Assistant
+# IRB Assistant
 
 > [!CAUTION]
-> **Under Active Development** -- This project is in early development and is **not ready for production use**. Features, APIs, and data schemas may change without notice. Use in development/testing environments only.
+> **Under active development.** This project is being piloted at one institution and is **not yet ready for general production use** at other sites. APIs, schemas, and UI may change without notice.
 
-A local-first web application that helps researchers draft **HRP-503c** (Human Research Engagement Determination) and **HRP-503** (full Human Research Protocol) IRB forms from uploaded study documents.
+An AI-assisted web application that helps researchers draft three IRB protocol forms from uploaded study documents:
 
-## How It Works
+- **HRP-503** &mdash; full Human Research Protocol application
+- **HRP-503c** &mdash; Human Research Engagement Determination
+- **HRP-398** &mdash; AI Considerations Worksheet (guidance only, not submitted to the IRB)
+
+A single **Study** automatically creates three submissions &mdash; one per form. Documents you upload to the Study are shared across all submissions and drive the AI analysis on each form.
+
+**Live deployment:** [https://ignet.org/irb-assistant/](https://ignet.org/irb-assistant/) &mdash; pilot tenancy at the University of North Dakota with Sanford Health, funded by NIH/NIGMS through the [TRANSCEND RDCDC](https://transcendrdcdc.org/) (P20GM155890).
+
+---
+
+## How it works
 
 ```
-Upload Documents  -->  Extract & Chunk  -->  LLM Analysis  -->  Review & Edit  -->  Export .docx
-   (DOCX/PDF/TXT)        (text + metadata)    (suggestions +     (accept/reject     (filled HRP-503c
-                                                evidence)          per field)          template)
+                  +-------------------------------------------+
+                  |  Study (one umbrella per research project)|
+                  +----------+--------+---------------+-------+
+                             |        |               |
+                             v        v               v
+                       HRP-503    HRP-503c        HRP-398
+                       Submission Submission     Submission
+                       (full app) (engagement)   (AI worksheet)
+                             ^        ^               ^
+                             |        |               |
+                             +--------+---------------+
+                                      |
+                                      |  Shared documents (PDF / DOCX / TXT)
+                                      |  Encrypted at rest, malware-scanned
+                                      v
+                       +----------------------------------+
+                       |  1. Upload study documents       |
+                       |  2. Run AI Analyze on a form     |
+                       |     - Evidence extraction        |
+                       |     - Optional Assistant drafts  |
+                       |  3. Review + edit suggestions    |
+                       |  4. Export filled DOCX           |
+                       +----------------------------------+
 ```
 
-1. **Upload** your study documents (DOCX, PDF, or TXT)
-2. **Automatic extraction** chunks the text with metadata for traceability
-3. **LLM analysis** generates field suggestions backed by evidence quotes from your documents
-4. **Review** each suggestion with side-by-side evidence browsing and deep-linking to source passages
-5. **Export** a completed HRP-503c DOCX with your approved answers filled into the official template
+The AI analysis runs in two modes per submission:
 
-### Login
+- **Strict mode (default for audit-grade workflows).** The LLM only proposes answers it can ground in a verbatim quote from your uploaded documents. Every suggestion includes a chunk-level evidence pointer. Fields with no supporting evidence stay blank for you to fill manually.
+- **Assistant mode.** On top of evidence-grounded answers, the LLM generates plain-language draft answers for fields with insufficient evidence, with explicit `[SPECIFY: ...]` placeholders for anything it would otherwise have to invent. Drafts are clearly distinguished from evidence-grounded answers in the UI (amber border, explicit "Accept draft" button).
 
-![Login Page](503c-assistant/screenshots/01-login.png)
+The Analyze button kicks off a queued background job. A real-time progress modal opens automatically and polls the job state every 2 seconds &mdash; pressable **Esc** dismisses the modal but keeps polling, **Cancel** stops the job at the next checkpoint, and partial results that already saved are kept.
 
-### Projects Dashboard
+---
 
-![Projects Dashboard](503c-assistant/screenshots/02-projects-dashboard.png)
+## Key features
 
-### Project Detail -- Document Upload & AI Analysis
+- **Three-form multi-submission model** &mdash; HRP-503, HRP-503c, HRP-398 share Study-level documents and run independently.
+- **Evidence-backed suggestions** &mdash; every LLM proposal links to a verbatim chunk from your source PDFs; quote-in-chunk match is enforced server-side.
+- **Real-time analysis modal** with Esc-dismiss, cancel, and step-by-step progress (Prepare &rarr; Extract evidence &rarr; AI drafts &rarr; Save).
+- **Section-level navigation** for HRP-503's 248 questions across 43 sections, with cross-section trigger gating (sections lock or unlock based on earlier answers).
+- **Encryption at rest** &mdash; uploaded documents and LLM payloads are encrypted with XChaCha20-Poly1305; keyring supports rotation.
+- **Malware scanning** via ClamAV with graceful fallback for hosts without ClamAV installed.
+- **Self-registration &rarr; admin approval workflow** &mdash; new users are blocked from login until an admin reviews and approves their account.
+- **Multi-provider LLM** &mdash; OpenAI, OpenAI-compatible (e.g. LM Studio, Ollama, GLM 4.7), with per-tenant SSRF allow-list and audit-redacted base URLs.
+- **Audit log** &mdash; every significant action (auth, upload, analysis, export, admin) is recorded with request context.
+- **Template-driven DOCX export** that fills Word content controls (SDTs) in the official HRP-503 / HRP-503c templates.
+- **WCAG 2.1 AA-aware UI** &mdash; skip-to-content links, ARIA semantics, dark-mode parity, keyboard-accessible modals, per-page titles.
+- **Retention management** &mdash; automated daily cleanup of expired uploads and exports.
 
-![Project Documents](503c-assistant/screenshots/03-project-documents.png)
+---
 
-### Field Review with Evidence
-
-![Field Review](503c-assistant/screenshots/04-project-review.png)
-
-### Admin Panel
-
-![Admin Panel](503c-assistant/screenshots/05-admin-panel.png)
-
-## Key Features
-
-- **Evidence-backed suggestions** -- every LLM suggestion includes traceable quotes from source documents with chunk-level provenance
-- **Encryption at rest** -- uploaded files are encrypted using XChaCha20-Poly1305
-- **Malware scanning** -- uploads are scanned via ClamAV before processing
-- **Audit logging** -- all actions (uploads, edits, exports, admin changes) are recorded
-- **Multi-provider LLM support** -- OpenAI, OpenAI-compatible, LM Studio, Ollama, and GLM 4.7
-- **Template-driven export** -- fills Word content controls (SDTs) in the official HRP-503c template
-- **Retention management** -- automated daily cleanup of expired documents and exports
-- **Role-based access** -- admin/user roles with configurable registration
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
-| Backend | Laravel 12 / PHP 8.3 |
-| Database | MySQL / MariaDB (user-space, no sudo) |
-| Frontend | Blade + Tailwind CSS + Alpine.js |
-| Build | Vite |
-| Tests | PHPUnit (142 tests, 451 assertions) + Playwright (21 E2E specs) |
+|---|---|
+| Backend | Laravel 12 &middot; PHP 8.3 (dev) / PHP 8.2 (prod via Remi) |
+| Database | MariaDB 10.x &middot; MySQL 8 |
+| Queue | Laravel Queue (Redis driver) with systemd worker |
+| Frontend | Blade &middot; Tailwind CSS &middot; Alpine.js |
+| Build | Vite (self-hosted Inter via `@fontsource/inter`) |
+| Tests | PHPUnit (456 tests / 1,405 assertions) &middot; Playwright E2E (21 specs) |
+| LLM (pilot) | LM Studio on DGX Spark via Tailscale &middot; gemma-4-e4b at 16K context |
 
-## Quick Start
+---
+
+## Quick start (local development)
 
 ### Prerequisites
 
 - PHP 8.3+
 - Node.js 18+
-- MariaDB or MySQL (included user-space scripts for Linux/WSL2)
+- MariaDB 10.x or MySQL 8
+- Redis (for the queue)
+- An LLM endpoint &mdash; OpenAI key, or any OpenAI-compatible local server (LM Studio, Ollama)
 
 ### Setup
 
 ```bash
-cd 503c-assistant
+git clone https://github.com/windysky/irb-assistant.git
+cd irb-assistant
 
-# Start local database (user-space, no sudo required)
+# Start a user-space MariaDB instance (no sudo required)
 ./ops/db/start.sh
 
 # Configure environment
@@ -82,157 +108,199 @@ php artisan key:generate
 
 # Install dependencies
 composer install
-npm install
+npm ci
 
-# Initialize database
-php artisan migrate
-php artisan db:seed
+# Initialize the database (migrations + seed admin + bundled HRP templates)
+php artisan migrate --seed
 
 # Build frontend assets
 npm run build
 
-# Start development server
+# Start the dev server
 php artisan serve --host=127.0.0.1 --port=8000
+
+# In a second terminal, start the queue worker
+php artisan queue:work --tries=1 --timeout=1800
 ```
 
-Open http://localhost:8000
+Open [http://localhost:8000](http://localhost:8000).
 
-### Default Login
+### Default seeded admin
 
 | Field | Value |
-|-------|-------|
-| Email | `admin@example.com` |
+|---|---|
+| Email | `admin@local` |
 | Password | `change-me` |
 
-To re-seed the admin user after changing credentials in `.env`:
+Change this immediately after first login. To re-seed:
 
 ```bash
 php artisan db:seed --class=Database\\Seeders\\AdminUserSeeder
 ```
 
-### Stop Database
+### Configure an LLM provider
+
+Sign in as admin, go to **Admin &rarr; LLM Providers**, click **Add provider**, and enter:
+
+- **Provider type** &mdash; OpenAI, OpenAI-compatible, LM Studio, Ollama, or GLM 4.7
+- **Base URL** &mdash; e.g. `http://127.0.0.1:1234/v1` for a local LM Studio
+- **Model** &mdash; e.g. `google/gemma-4-e4b`
+- **API key** &mdash; if required
+
+For **LM Studio** specifically, load the model with a 16K+ context window:
 
 ```bash
-cd 503c-assistant
-./ops/db/stop.sh
+lms unload google/gemma-4-e4b
+lms load   google/gemma-4-e4b --context-length 16384 --gpu max -y
 ```
 
-## Project Structure
+The default prompt config sends up to 40 evidence chunks with 1,200 chars each, plus 20 questions per batch. A 4K context is too small for non-trivial HRP forms.
 
-```
-503c-assistant/
-  app/
-    Console/Commands/       # Artisan commands (retention prune, template dump)
-    Http/Controllers/       # Request handlers (projects, admin, auth, export)
-    Http/Middleware/         # Auth guards (EnsureUserIsAdmin, EnsureUserIsActive)
-    Models/                 # 15 Eloquent models
-    Services/               # Core business logic
-      AuditService           - Action logging with request context
-      DocumentExtractionService - DOCX/PDF/TXT text extraction + chunking
-      DocxExportService      - Template-based DOCX generation via SDT filling
-      FileEncryptionService  - XChaCha20-Poly1305 encryption at rest
-      LlmChatService         - Multi-provider LLM gateway
-      MalwareScanService     - ClamAV integration with quarantine
-      ProjectAnalysisService - Evidence-based field suggestion pipeline
-      ProjectPurgeService    - Safe project deletion with audit redaction
-      SettingsService        - Key-value system settings with caching
-      TemplateService        - Template upload, control scanning, mapping
-    ViewModels/             # View data preparation
-  database/
-    migrations/             # 22 migration files
-    seeders/                # Admin user, field definitions, template seeder
-    factories/              # 7 model factories for testing
-  resources/
-    mapping-packs/          # Bundled mappings: HRP-503c (7 fields) + HRP-503 (33 fields)
-    templates/              # HRP-503c.docx + HRP-503.docx official templates
-    views/                  # Blade templates (admin, auth, projects, components)
-  ops/
-    db/                     # User-space MariaDB start/stop/setup scripts
-    apache/                 # Production Apache config samples
-    cron/                   # Crontab example for retention
-  tests/
-    Feature/                # Integration tests (auth, projects, admin, E2E flow)
-    Unit/                   # Unit tests (all services, view models)
-```
+---
 
 ## Configuration
 
-### Environment Variables
+Environment variables (see `.env.example` for the full list):
 
 | Variable | Default | Description |
-|----------|---------|-------------|
-| `IRB_ALLOW_REGISTRATION` | `false` | Enable public user registration |
-| `IRB_PDF_PARSER_MEMORY_MB` | `256` | Memory limit for PDF fallback parser |
-| `IRB_FILE_ENCRYPTION_KEYS` | -- | Encryption keys for file storage |
-| `IRB_FILE_ENCRYPTION_ACTIVE_KEY_ID` | -- | Active encryption key identifier |
+|---|---|---|
+| `IRB_PDF_PARSER_MEMORY_MB` | `256` | Memory limit for the PDF fallback parser |
+| `IRB_FILE_ENCRYPTION_KEYS` | &mdash; | Pipe-separated keyring for file at-rest encryption |
+| `IRB_FILE_ENCRYPTION_ACTIVE_KEY_ID` | &mdash; | Active key ID for new encryptions |
+| `IRB_DRAFTING_MAX_PER_RUN` | `20` | Max AI-drafted answers per Assistant-mode run |
+| `IRB_ALLOW_LLM_LOOPBACK` | `false` | Local-dev only &mdash; permits 127.0.0.1 base URLs for LLM providers |
+| `IRB_LLM_HTTP_TIMEOUT` | `600` | LLM HTTP request timeout (seconds) |
+| `SESSION_LIFETIME` | `60` | Idle session timeout (minutes) |
+| `SESSION_EXPIRE_ON_CLOSE` | `true` | Sessions invalidate when browser closes |
 
-See `503c-assistant/.env.example` for the full list.
+### Sub-path deployment
 
-### LLM Providers
+The app supports deployment under a URL prefix (e.g. `/irb-assistant` on a multi-tenant host). Set:
 
-Configure LLM providers through the Admin panel. Supported types:
+```bash
+APP_URL=https://example.org/irb-assistant
+```
 
-- **OpenAI** -- standard OpenAI API
-- **OpenAI-compatible** -- any `/chat/completions` endpoint
-- **LM Studio** -- local LM Studio instance
-- **Ollama** -- local Ollama instance
-- **GLM 4.7** -- GLM model endpoint
+…and build assets with the matching prefix so the CSS `url()` font references resolve correctly:
 
-External LLM usage can be globally disabled via admin policy settings.
+```bash
+VITE_APP_BASE=/irb-assistant/build/ npm run build
+```
+
+---
+
+## Authentication and authorisation
+
+- **Registration is public by default**, but new accounts are created with `is_approved=false` and cannot log in until an admin clicks **Approve** on the **Admin &rarr; Users** tab.
+- Sessions idle-expire after 60 minutes and invalidate when the browser closes &mdash; no "Remember me" option is offered. This is intentional for handling study PII.
+- Password reset is rate-limited (5 attempts per minute), as are login, registration, document upload, and analysis dispatch.
+- Admins have a non-deletable "Demote" action that prevents accidental lockout.
+
+---
 
 ## Testing
 
 ```bash
-cd 503c-assistant
-
-# Run full test suite
+# Full PHPUnit suite (456 tests, 1,405 assertions)
 php artisan test
 
-# Run with coverage (requires Xdebug/PCOV)
-php artisan test --coverage
+# E2E (Playwright)
+npx playwright test
+
+# Smoke test against a live LM Studio instance over Tailscale (opt-in)
+IRB_RUN_LIVE_LLM=1 npx playwright test lm-studio-smoke.spec.ts --workers=1
 ```
 
-## Retention & Cleanup
+CI runs the full suite + `vendor/bin/pint --test` + `npm run build` on every push.
 
-The app treats all uploads and exports as sensitive data. A retention prune command removes expired files:
-
-```bash
-# Preview what would be deleted
-php artisan irb:retention-prune --dry-run
-
-# Execute cleanup
-php artisan irb:retention-prune
-
-# Custom retention period
-php artisan irb:retention-prune --days=7
-```
-
-Automated daily cleanup runs at 03:00 via Laravel's scheduler. Add this to your crontab:
-
-```bash
-* * * * * cd /path/to/503c-assistant && php artisan schedule:run >> /dev/null 2>&1
-```
+---
 
 ## Security
 
-- Uploaded files stored outside web root with optional XChaCha20-Poly1305 encryption
-- Malware scanning via ClamAV (best-effort, graceful fallback — see `503c-assistant/SECURITY_CHECKLIST.md` "ClamAV setup guide" for install / opt-out options)
-- Rate limiting on authentication routes (5 attempts per minute)
-- Public registration disabled by default
-- LLM request/response payloads stored as redacted JSON with encrypted full payload
-- Audit trail for all admin, upload, analysis, and export actions
-- Project deletion redacts audit payloads while preserving event records
+- Documents stored outside the web root with optional XChaCha20-Poly1305 encryption.
+- Malware scanning via ClamAV; gracefully falls back to a quarantine-only mode when ClamAV is not installed.
+- LLM provider **base URL** is DNS-resolved server-side and rejected if it points at private IP space, IPv6 loopback / link-local / ULA, 6to4 / Teredo translation prefixes, non-decimal IPv4 literals, or IPv4-mapped IPv6. Tailscale's 100.64.0.0/10 range is allowed by design. See [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) for the full SSRF posture.
+- Rate limiting on all auth + sensitive routes (5 requests per minute).
+- LLM request and response payloads are stored with sensitive parts redacted in the JSON column; the full payload is kept encrypted for audit.
+- Audit log covers auth events, document uploads, analysis runs, exports, and all admin actions.
+- Project deletion redacts audit payloads while preserving event records (regulatory-friendly).
+- @MX code-level annotations document invariants, danger zones, and incomplete work for downstream AI agents.
 
-See `503c-assistant/SECURITY_CHECKLIST.md` for the full security posture.
+For the full security posture see [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) and the deploy playbook at [`ops/DEPLOYMENT_CHECKLIST.md`](ops/DEPLOYMENT_CHECKLIST.md).
 
-## Deployment
+---
 
-For production deployment guidance:
+## Production deployment
 
-- `503c-assistant/ops/DEPLOYMENT_CHECKLIST.md` -- step-by-step deployment guide
-- `503c-assistant/ops/apache/` -- Apache reverse proxy configuration samples
-- `503c-assistant/ops/cron/` -- Crontab example for scheduler
+The reference production deployment is on RHEL 9 + Apache 2.4 + PHP 8.2 (Remi side-by-side) + MariaDB. The public templates in [`ops/apache/`](ops/apache/) and [`ops/db/`](ops/db/) cover the vhost, FPM pool, and database setup. Site-specific deploy automation (rsync wrapper, vhost installer, secrets handling) is maintained in a separate internal repository.
+
+The queue worker is supervised by systemd:
+
+```ini
+# /etc/systemd/system/irb-queue.service
+[Service]
+ExecStart=/opt/remi/php82/root/usr/bin/php artisan queue:work --tries=1 --timeout=1800 --sleep=3 --max-time=3600
+WorkingDirectory=/data/var/www/html/irb-assistant
+```
+
+---
+
+## Project structure
+
+```
+.
++-- app/
+|   +-- Console/Commands/        # Retention prune, template control dump
+|   +-- Enums/                   # FormCode backed enum (hrp503 | hrp503c | hrp398)
+|   +-- Http/Controllers/        # Auth, Study, Submission, Admin, Export
+|   +-- Http/Middleware/         # EnsureUserIsAdmin, EnsureUserIsActive
+|   +-- Jobs/                    # AnalyzeSubmissionJob (queued LLM pipeline)
+|   +-- Models/                  # Study, Submission, SubmissionAnswer, FormDefinition, ...
+|   +-- Services/                # SubmissionAnalysisService, LlmChatService,
+|                                #   AnswerValidator, ConditionalVisibilityEvaluator,
+|                                #   SubmissionDraftingService, SubmissionDocxExportService,
+|                                #   FileEncryptionService, MalwareScanService, AuditService
++-- database/
+|   +-- migrations/              # Phase 3 canonical schema (studies + submissions)
+|   +-- seeders/                 # Admin, FormDefinition, Hrp398FieldDefinitions, Templates
++-- resources/
+|   +-- templates/               # HRP-503.docx + HRP-503c.docx + HRP-398.docx
+|   +-- views/                   # Blade (studies, submissions, admin, auth, layouts)
+|   |   +-- submissions/types/   # 24 question-type partials (radio, checkbox, textarea, ...)
++-- routes/                      # web.php (thin) + auth.php
++-- tests/
+|   +-- Feature/FormsV2/         # Phase 3/4/5/6/8 integration tests
+|   +-- Unit/                    # Service + helper tests
++-- ops/
+|   +-- db/                      # User-space MariaDB start/stop scripts
+|   +-- apache/                  # Apache vhost samples
++-- ops/                         # Public deploy templates (Apache vhost, FPM pool, MariaDB user-space scripts)
+```
+
+---
+
+## Roadmap
+
+Pilot phase is closed-loop with the UND clinical research group + Sanford collaborators. After the pilot we plan:
+
+- Per-field version history (every edit preserved, not just current value).
+- Staging environment alongside production.
+- Sentry error tracking + UptimeRobot HTTP monitoring.
+- Curated `field_guidance` table &mdash; plain-English explainer + redacted example + common pitfalls per HRP field.
+- Optional SSO via institutional Shibboleth/SAML.
+
+Open work is tracked internally.
+
+---
+
+## Credits
+
+Developed by **Dr. Junguk Hur** ([@hurlab](https://www.hurlab.com/)) at the [University of North Dakota School of Medicine and Health Sciences](https://med.und.edu/) in collaboration with **Sanford Health**.
+
+This work is supported by **NIH/NIGMS** through the [TRANSCEND RDCDC](https://transcendrdcdc.org/) (P20GM155890).
+
+---
 
 ## License
 
-This project is proprietary. All rights reserved.
+This project is currently distributed under a research-pilot licence. Contact the maintainer for evaluation use. See [`LICENSE`](LICENSE) once added.

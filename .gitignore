@@ -224,10 +224,48 @@ dist-ssr/
 .mcp.json
 resume_session.txt
 
-# Sensitive research source materials (TAVR project, real PHI/PII).
+# Sensitive research source materials (real PHI / PII).
 # Do NOT track even in private repo — GitHub is not HIPAA-BAA-covered.
 # Store these in UND OneDrive / REDCap / institutional storage instead.
-docs/
+docs/*
+# Exception: operator runbooks (non-sensitive deploy/DBA procedures)
+!docs/operator-runbooks/
+# Exception: README screenshots (synthetic test data only, no PII)
+!docs/screenshots/
 
-503c-assistant/.claude/
-503c-assistant/.playwright/
+# Session-local diagnostic scripts (preflight, watch, post-run helpers).
+# Re-created per session under .scratch/; never committed.
+.scratch/
+
+# ============================================
+# Laravel app patterns (merged from 503c-assistant/.gitignore during Phase 2 flatten)
+# ============================================
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.nova
+/.phpunit.cache
+/.zed
+/auth.json
+/public/build
+/public/hot
+/public/storage
+/playwright-report
+/test-results
+/.playwright
+/.playwright-mcp
+/tests/screenshots
+/storage/*.key
+/storage/pail
+/storage/framework/views/*.php
+/storage/app/projects
+/storage/app/templates
+/storage/app/exports
+/storage/app/tmp
+/var
+/vendor
+/tmp
+/test.php
+/init.sql
+Homestead.json
+Homestead.yaml
