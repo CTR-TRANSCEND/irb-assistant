@@ -23,17 +23,9 @@ The screenshots below walk through the full workflow using a **fictional Pediatr
 
 ![Landing page](docs/screenshots/01-landing.png)
 
-### Sign in
+### Authentication &mdash; sign in, self-register (admin approval required), and password reset
 
-![Sign in](docs/screenshots/02-login.png)
-
-### Self-registration (admin approval required before login)
-
-![Register](docs/screenshots/03-register.png)
-
-### Password reset
-
-![Forgot password](docs/screenshots/04-forgot-password.png)
+![Auth flow](docs/screenshots/auth-composite.png)
 
 ### Studies dashboard (empty state for a new user)
 
@@ -61,9 +53,11 @@ The screenshots below walk through the full workflow using a **fictional Pediatr
 
 ![Analyze complete](docs/screenshots/13-analyze-progress-done.png)
 
-### Review tab &mdash; AI-suggested answers with evidence quotes from your documents
+### Review tab &mdash; typed-question renderers, in-form save, progress + AI Analysis side rail
 
 ![HRP-503c Review](docs/screenshots/14-submission-503c-review.png)
+
+Each top-level question renders as one of 24 typed renderers (textarea, radio, checkbox group, date, file, etc.). AI-suggested answers from a completed run appear inline with their source-document quote.
 
 ### HRP-503 full application &mdash; section-group navigation across 248 questions
 
