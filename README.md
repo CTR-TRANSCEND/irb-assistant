@@ -15,6 +15,85 @@ A single **Study** automatically creates three submissions &mdash; one per form.
 
 ---
 
+## Demo
+
+The screenshots below walk through the full workflow using a **fictional Pediatric Asthma Outcomes Study** as the sample. No real research data is shown.
+
+### Landing page
+
+![Landing page](docs/screenshots/01-landing.png)
+
+### Sign in
+
+![Sign in](docs/screenshots/02-login.png)
+
+### Self-registration (admin approval required before login)
+
+![Register](docs/screenshots/03-register.png)
+
+### Password reset
+
+![Forgot password](docs/screenshots/04-forgot-password.png)
+
+### Studies dashboard (empty state for a new user)
+
+![Studies empty](docs/screenshots/07-studies-empty.png)
+
+### Create a Study &mdash; one Study auto-creates three submissions (HRP-503 / HRP-503c / HRP-398)
+
+![Create study](docs/screenshots/08-study-create-filled.png)
+
+### Study overview &mdash; Source Documents are shared across all three forms
+
+![Study show with three forms](docs/screenshots/09-study-show-three-forms.png)
+
+### After uploading a protocol PDF
+
+![Study show with doc](docs/screenshots/10-study-show-with-doc.png)
+
+### Submission view &mdash; Analyze is the default tab for fresh submissions
+
+![Submission Analyze tab](docs/screenshots/11-submission-503c-analyze.png)
+
+### Run AI Analysis &mdash; real-time progress modal with cancel + Esc-to-dismiss
+
+![Analyze progress mid-run](docs/screenshots/12-analyze-progress-modal.png)
+
+![Analyze complete](docs/screenshots/13-analyze-progress-done.png)
+
+### Review tab &mdash; AI-suggested answers with evidence quotes from your documents
+
+![HRP-503c Review](docs/screenshots/14-submission-503c-review.png)
+
+### HRP-503 full application &mdash; section-group navigation across 248 questions
+
+![HRP-503 nav](docs/screenshots/17-submission-503-review-nav.png)
+
+### HRP-398 AI Considerations Worksheet &mdash; per-item status accordion
+
+![HRP-398 panel](docs/screenshots/18-submission-398-panel.png)
+
+### Export the filled DOCX
+
+![Export tab](docs/screenshots/15-submission-503c-export.png)
+
+### Studies dashboard with an in-progress study
+
+![Studies index populated](docs/screenshots/20-studies-with-asthma.png)
+
+### Profile
+
+![Profile](docs/screenshots/19-profile.png)
+
+### Admin &mdash; LLM Providers, Observability, Settings
+
+| | |
+|---|---|
+| ![LLM Providers](docs/screenshots/21-admin-providers.png) | ![Observability](docs/screenshots/23-admin-observability.png) |
+| ![Settings](docs/screenshots/24-admin-settings.png) | |
+
+---
+
 ## How it works
 
 ```
