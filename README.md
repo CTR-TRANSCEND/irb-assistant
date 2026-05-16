@@ -43,6 +43,12 @@ The screenshots below walk through the full workflow using a **fictional Pediatr
 
 ![Study show with doc](docs/screenshots/10-study-show-with-doc.png)
 
+### Edit study details after creation &mdash; correct the nickname, title, PI, summary, or sponsor at any time
+
+![Edit study form](docs/screenshots/09-study-edit.png)
+
+Edits propagate to all three child submissions inside a single DB transaction so the per-form headers stay consistent with the Study identity.
+
 ### Submission view &mdash; Analyze is the default tab for fresh submissions
 
 ![Submission Analyze tab](docs/screenshots/11-submission-503c-analyze.png)
@@ -51,15 +57,23 @@ The screenshots below walk through the full workflow using a **fictional Pediatr
 
 ![Analyze progress mid-run](docs/screenshots/12-analyze-progress-modal.png)
 
+The Analyze button is automatically disabled while a run is queued or running, preventing accidental double-submission.
+
 ![Analyze complete](docs/screenshots/13-analyze-progress-done.png)
 
-### Review tab &mdash; typed-question renderers, in-form save, progress + AI Analysis side rail
+### Review tab &mdash; collapsible section accordion + sticky sidebar nav + per-section progress badges
 
 ![HRP-503c Review](docs/screenshots/14-submission-503c-review.png)
 
-Each top-level question renders as one of 24 typed renderers (textarea, radio, checkbox group, date, file, etc.). AI-suggested answers from a completed run appear inline with their source-document quote.
+Each top-level question renders as one of 24 typed renderers (textarea, radio, checkbox group, date, file, etc.). AI-suggested answers from a completed run appear inline with their source-document quote. The sidebar's active indicator follows the user's scroll position via IntersectionObserver, and the last-viewed section is persisted to localStorage (keyed by study UUID, PII-free).
 
-### HRP-503 full application &mdash; section-group navigation across 248 questions
+### "About this field" disclosure &mdash; curated IRB guidance for individual form fields
+
+![Guidance disclosure panel](docs/screenshots/14b-guidance-panel.png)
+
+Each guidance entry includes a plain-language description, "Why IRB cares", a worked example, common pitfalls, and source attribution. Content is reviewed against an anti-fabrication deny-list at seed time (no real PI names, grant numbers, or IRB protocols).
+
+### HRP-503 full application &mdash; sticky section nav across 43 sections / 248 questions
 
 ![HRP-503 nav](docs/screenshots/17-submission-503-review-nav.png)
 
@@ -128,17 +142,20 @@ The Analyze button kicks off a queued background job. A real-time progress modal
 ## Key features
 
 - **Three-form multi-submission model** &mdash; HRP-503, HRP-503c, HRP-398 share Study-level documents and run independently.
+- **Editable Study details** &mdash; correct nickname, application title, PI, summary, or sponsor at any time after creation; edits propagate to all three child submissions inside one DB transaction.
 - **Evidence-backed suggestions** &mdash; every LLM proposal links to a verbatim chunk from your source PDFs; quote-in-chunk match is enforced server-side.
-- **Real-time analysis modal** with Esc-dismiss, cancel, and step-by-step progress (Prepare &rarr; Extract evidence &rarr; AI drafts &rarr; Save).
+- **Real-time analysis modal** with Esc-dismiss, cancel, and step-by-step progress (Prepare &rarr; Extract evidence &rarr; AI drafts &rarr; Save). The Analyze button is automatically disabled while a run is queued or running.
+- **Collapsible section accordion + sticky sidebar nav** across all three form codes &mdash; per-section completion badges (N/M answered), `aria-current` active indicator driven by IntersectionObserver, last-viewed section persisted to localStorage (PII-free, keyed by study UUID).
+- **"About this field" disclosure panel** for guidance-authored questions &mdash; plain-language description, "Why IRB cares", worked example, common pitfalls, source attribution. Anti-fabrication contract enforced at seed time.
 - **Section-level navigation** for HRP-503's 248 questions across 43 sections, with cross-section trigger gating (sections lock or unlock based on earlier answers).
 - **Encryption at rest** &mdash; uploaded documents and LLM payloads are encrypted with XChaCha20-Poly1305; keyring supports rotation.
 - **Malware scanning** via ClamAV with graceful fallback for hosts without ClamAV installed.
 - **Self-registration &rarr; admin approval workflow** &mdash; new users are blocked from login until an admin reviews and approves their account.
 - **Multi-provider LLM** &mdash; OpenAI, OpenAI-compatible (e.g. LM Studio, Ollama, GLM 4.7), with per-tenant SSRF allow-list and audit-redacted base URLs.
-- **Audit log** &mdash; every significant action (auth, upload, analysis, export, admin) is recorded with request context.
+- **Audit log** &mdash; every significant action (auth, upload, analysis, export, admin, study edit) is recorded with request context; configurable retention prune keeps the table bounded.
 - **Template-driven DOCX export** that fills Word content controls (SDTs) in the official HRP-503 / HRP-503c templates.
-- **WCAG 2.1 AA-aware UI** &mdash; skip-to-content links, ARIA semantics, dark-mode parity, keyboard-accessible modals, per-page titles.
-- **Retention management** &mdash; automated daily cleanup of expired uploads and exports.
+- **WCAG 2.1 AA-conformant UI** &mdash; skip-to-content links, ARIA semantics, `role="alert"` on validation errors, dark-mode parity (including JS-driven state), keyboard-accessible modals with focus management.
+- **Retention management** &mdash; automated daily cleanup of expired uploads, exports, and audit events.
 
 ---
 
@@ -151,7 +168,7 @@ The Analyze button kicks off a queued background job. A real-time progress modal
 | Queue | Laravel Queue (Redis driver) with systemd worker |
 | Frontend | Blade &middot; Tailwind CSS &middot; Alpine.js |
 | Build | Vite (self-hosted Inter via `@fontsource/inter`) |
-| Tests | PHPUnit (456 tests / 1,405 assertions) &middot; Playwright E2E (21 specs) |
+| Tests | PHPUnit (527 tests / 1,994 assertions) &middot; Playwright E2E |
 | LLM (pilot) | LM Studio on DGX Spark via Tailscale &middot; gemma-4-e4b at 16K context |
 
 ---
